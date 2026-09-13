@@ -471,10 +471,18 @@ function setSeed(str){
   RNG = mulberry32(seedOf(SEED));
   return SEED;
 }
+// 种子：一个重庆地名 + 四位数。以前是从一串地名里随机抽单个字拼，
+// 抽出来是「桥长嘴渝」这种乱码，现在整词取。
+const SEED_PLACES = [
+  "解放碑","观音桥","江北嘴","朝天门","磁器口","沙坪坝","杨家坪","南坪","大坪","两路口",
+  "较场口","七星岗","上清寺","牛角沱","菜园坝","弹子石","南滨路","洪崖洞","十八梯","山城巷",
+  "白象街","千厮门","东水门","石板坡","李子坝","袁家岗","大渡口","红旗河沟","冉家坝","五里店",
+  "寸滩","唐家沱","龙头寺","小什字","临江门","大溪沟","铜元局","四公里","黄桷坪","黄桷垭",
+  "鹅岭","歌乐山","缙云山","中梁山","涂山","南山","北碚","鱼洞","嘉陵江","长江边",
+];
 function randomSeed(){
-  const a = "渝江北嘴解放碑观音桥沙坪坝南坪磁器口两路口朝天门嘉陵长江大桥雾轻轨火锅小面";
-  let out = ""; for(let i=0;i<4;i++) out += a[Math.floor(Math.random()*a.length)];
-  return out;
+  const p = SEED_PLACES[Math.floor(Math.random()*SEED_PLACES.length)];
+  return p + String(Math.floor(Math.random()*9000)+1000);
 }
 
 /* ============ 数值总表 ============ */
@@ -5818,7 +5826,7 @@ function showChallengePicker(){
 }
 function askSeed(chalId){
   $("#mTitle").textContent = "种子";
-  $("#mBody").innerHTML = `填一个种子，同一个种子必然复现同一轮牛熊、同一批项目、同一次检查。<br>留空就随机。<br><br><input id="seedInput" maxlength="16" placeholder="比如：解放碑" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--sunken);color:var(--txt);font-family:inherit;font-size:16px">`;
+  $("#mBody").innerHTML = `填一个种子，同一个种子必然复现同一轮牛熊、同一批项目、同一次检查。<br>随便填什么都行，中文英文数字都认。留空就随机给一个。<br><br><input id="seedInput" maxlength="16" placeholder="比如：解放碑1993" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--sunken);color:var(--txt);font-family:inherit;font-size:16px">`;
   const box = $("#mOpts"); box.innerHTML = "";
   const b = document.createElement("button"); b.className = "main"; b.textContent = "开始";
   b.onclick = ()=>{
