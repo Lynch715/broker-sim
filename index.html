@@ -390,7 +390,7 @@ button.main:hover{filter:brightness(1.08);color:var(--ongold)}
   <div class="energy">
     <span class="dots" id="energyDots">●●●</span>
     <span class="hint">每件事花 1 点精力，用完就结算</span>
-    <button class="main" id="btnEnd">结束本月 ▶</button>
+    <button class="main" id="btnEnd">结束本月 →</button>
   </div>
 
   <div class="warnbar" id="warnBar"></div>
@@ -1955,7 +1955,7 @@ function ibDetail(i){
   opts.push({t:`尽调（第 ${p.dd+1} 次）`, s:`花 1 精力 + ${BALANCE.ib.ddCost}万。${p.dd===0?"揭开一半":"把底下的全看清"}`,
     disabled:p.dd>=2 || p.stage>=2, fn:()=>ibDD(i)});
   if(p.stage<last){
-    opts.push({t:`▶ 推进到「${st[p.stage+1]}」`,
+    opts.push({t:`→ 推进到「${st[p.stage+1]}」`,
       s: waiting ? `还得等 ${p.waitTo-S.month} 个月` : `花 1 精力，收 ${ibFeeAt(p,p.stage+1)}万`,
       disabled: waiting, fn:()=>ibAdvance(i)});
   }
