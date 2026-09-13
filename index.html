@@ -348,13 +348,13 @@ button.main:hover{filter:brightness(1.08);color:var(--ongold)}
   <div class="inner"><div class="copy">
     <div class="kicker">上任前先看一眼</div>
     <h2>渝江证券，三年，一轮牛熊</h2>
-    <p class="lead">重庆，江北嘴。你接手渝江证券——一家一九九三年成立的本地小券商，全国排名第九十六，总部在江北嘴，最老的营业部在解放碑，大户室里坐着从认购证年代活到今天的阿姨。<br><br>牌子还在，客户还在，就是不挣钱。手续费收入比二〇一五年少了一个零，账上八个亿，按现在的亏法能撑四年。<br><br>股东方换了董事长，董事长空降了你。任期三年。</p>
+    <p class="lead">重庆，江北嘴。你接手渝江证券——一家一九九三年成立的本地小券商，全国一百四十家里排第一百二十五，三个营业部，托管客户资产一百二十亿。最老的那家在解放碑，大户室里坐着从认购证年代活到今天的阿姨。<br><br>牌子还在，客户还在，就是不挣钱。手续费收入比二〇一五年少了一个零，一个月的佣金填不上一个月的工资。<br><br>账上有三亿五，看着还能烧几年。但这笔钱是公司的全部家当——自营要用它，两融要用它，开一家营业部就是五千万。真正能躺着亏掉的，没有那么多。<br><br>股东方换了董事长，董事长空降了你。任期三年。</p>
     <div class="pts">
       <div class="pt"><b>01</b><span><b>行情是这个游戏的主角。</b>冷清、回暖、疯牛、股灾、修复——每一局都要完整走一遍。牛市里营业部排队排到楼下，全员发财；股灾里两融爆仓、大户骂娘、董事会问责。你在顶点做的那个决定，决定你能不能活过后面五个月。</span></div>
       <div class="pt"><b>02</b><span><b>佣金拨盘是你唯一不花精力的大开关。</b>降一档，开户就多、收入就少。降下去容易，升上来难——涨价这件事，客户是用脚投票的。</span></div>
       <div class="pt"><b>03</b><span><b>七个人，七种活法。</b>董事长要业绩更怕出事，老营业部的客户比公司还认他，投行想做出一单证明自己，自营怕亏更怕踏空，合规什么都留痕，研究想上热搜，大户室的阿姨坐了十八年。好感够了才有特权，每个人都想从你这儿拿点什么。</span></div>
       <div class="pt"><b>04</b><span><b>来钱快的路子都留案底。</b>配资通道、老鼠仓、吹票、装没看见——每一条都来钱，每一条都在账上记着。年底有分类评级，掉一级就是业务资格没了。</span></div>
-      <div class="pt"><b>05</b><span><b>客户的钱不是公司的钱。</b>三百亿托管在你这儿，一分都不是你的。你能拿的只有佣金、尾佣、利息和承销费。这条记住了，你就比一半同行强。</span></div>
+      <div class="pt"><b>05</b><span><b>客户的钱不是公司的钱。</b>一百二十亿托管在你这儿，一分都不是你的。你能拿的只有佣金、尾佣、利息和承销费。这条记住了，你就比一半同行强。</span></div>
     </div>
     <button class="start" onclick="startFromGuide()">上任</button>
     <button class="sec" id="guideGallery" style="display:none" onclick="showGallery()">图鉴 · 结局 / 成就 / 天赋</button>
@@ -502,8 +502,8 @@ function randomSeed(){
 /* ============ 数值总表 ============ */
 // 所有可调数值集中在这里，禁止把魔数散在逻辑里。金额内部单位统一为「万元」。
 const BALANCE = {
-  start:{ cash:35000, netAsset:250000, aum:3000000, fundHold:200000, index:2900, mood:35,
-          trust:55, morale:60, risk:20, rank:96, grade:"BBB" },
+  start:{ cash:35000, netAsset:120000, aum:1200000, fundHold:80000, index:2900, mood:35,
+          trust:55, morale:60, risk:20, rank:125, grade:"BBB" },
 
   cycle:{
     phases:[["cold",1,8],["warm",9,14],["mania",15,20],["crash",21,25],["recover",26,36]],
@@ -530,12 +530,12 @@ const BALANCE = {
         trustPer:0.00022,        // (口碑-50) × 该系数 × aum
         rivalDrain:0.0022 },
 
-  outlet:{ perStar:640, decoMul:0.15, rampStep:0.25, openCost:5000, openMonths:2 },
+  outlet:{ perStar:260, decoMul:0.15, rampStep:0.25, openCost:2800, openMonths:2 },
 
-  cost:{ hq:350, branchPerStar:10, perEmpTeam:12, sysPerLevel:30, sysUpgrade:[0,3000,8000], fundRate:0.005/12 },
+  cost:{ hq:150, branchPerStar:7, perEmpTeam:9, sysPerLevel:25, sysUpgrade:[0,1800,4500], fundRate:0.005/12 },
 
   // 自营改成真金白银：lots 是三档各自投入多少（万），钱从 cash 划到 propCash
-  prop:{ lots:[0, 15000, 40000], beta:1.2, crashBeta:1.40, crashBetaMax:0.40,
+  prop:{ lots:[0, 8000, 20000], beta:1.2, crashBeta:1.40, crashBetaMax:0.40,
          crashSlip:0.92, alphaPerStar:0.003, fatigueAlpha:-0.004, recoverAlpha:0.003 },
 
   // 两融：P0 里按情绪自然渗透（散户自己加杠杆），玩家可操作的两融业务 P1 开放
@@ -552,7 +552,7 @@ const BALANCE = {
 
   trustBase:55, riskBase:22, trustPull:0.6,
 
-  score:{ profitGoal:8000, inflowGoal:0.25, trustGoal:65, rankGoal:70 },
+  score:{ profitGoal:8000, inflowGoal:0.25, trustGoal:65, rankGoal:100 },
 
   xu:{ startFav:62, quarterPenalty:12, patienceFloor:0, crashBoardCut:40 },
 };
@@ -595,7 +595,7 @@ const OUTLET_POOL = [
   {id:"wz",  name:"万州营业部",   star:2, rent:4,  cost:1100, desc:"下沉市场，没竞争，也没量"},
 ];
 const DECO_NAME = ["普通大厅","VIP 大户室","私人银行级"];
-const DECO_COST = [0, 900, 2600];
+const DECO_COST = [0, 550, 1600];
 
 /* ============ 员工 ============ */
 const TRAITS = {
@@ -731,12 +731,12 @@ Object.assign(BALANCE, {
   ib:{
     stagePay:[0.15, 0.15, 0.30, 0.40],   // 签约 / 尽调完 / 申报 / 过会发行
     maxIPO:2, poolShow:2, refreshQuarter:1,
-    ddCost:50, ddRevealFirst:0.5,
+    ddCost:30, ddRevealFirst:0.5,
     maxIPOAll:3,                       // 每局 IPO（含北交所）总上限
-    baodaiHire:{sign:300, salary:8, max:6},
+    baodaiHire:{sign:220, salary:7, max:6},
     inquiryRounds:[1,3], inquiryDirtyExtra:1, inquiryCutFee:0.10,
     fraudJitter:0.22, fraudSurprise:0.08, fraudSurpriseRange:[0.45,0.60],
-    underwriteLoss:[800,2000], breakIssue:0.35,
+    underwriteLoss:[500,1300], breakIssue:0.35,
     blowChance:0.30, blowMonths:12,
     fixDelay:2,
   },
@@ -750,16 +750,16 @@ Object.assign(BALANCE, {
     gradeBonus:{AAA:1.5, AA:1.5, A:1.5, BBB:1, BB:0, B:0, CCC:0, CC:0, C:0, D:0},
     crashLoss:0.32,
   },
-  research:{ cost:3000, perStar:120, upCost:900, monthly:150 },
+  research:{ cost:1800, perStar:70, upCost:550, monthly:90 },
   talent:{ pointPerScore:0.12, pointPerNewEnding:2, pointPerNewAch:1 },
   faction:{ startMonth:18, endMonth:26 },
   swan:{ perGame:3 },
   // 发债：小券商真正的资金来源。本金进出只走 cash，不进 profitCum
   bond:{
     kinds:[
-      {id:"corp",  nm:"公司债",   amt:50000,  rate:0.042, months:24, minGrade:"BBB"},
-      {id:"sub",   nm:"次级债",   amt:100000, rate:0.055, months:24, minGrade:"BBB", onlyOne:true},
-      {id:"cp",    nm:"短融",     amt:30000,  rate:0.036, months:6,  minGrade:"BB"},
+      {id:"corp",  nm:"公司债",   amt:25000,  rate:0.042, months:24, minGrade:"BBB"},
+      {id:"sub",   nm:"次级债",   amt:50000,  rate:0.055, months:24, minGrade:"BBB", onlyOne:true},
+      {id:"cp",    nm:"短融",     amt:15000,  rate:0.036, months:6,  minGrade:"BB"},
     ],
     maniaDiscount:-0.005, crashPremium:0.015, rolloverPremium:0.015,
     debtCapOfNetAsset:0.6,   // 监管盯净资本：总负债不得超过净资产的六成
@@ -1267,9 +1267,9 @@ function initialState(){
     grades:[],
     bbs:[], chat:[],
     outlets:[
-      {id:"jfb", name:"解放碑营业部", star:5, rent:15, mgr:0, deco:1, ramp:1, building:0, aum:1500000, desc:"九三年的老店，大户室里坐着半部重庆股市史"},
-      {id:"gyq", name:"观音桥营业部", star:4, rent:10, mgr:1, deco:0, ramp:1, building:0, aum:900000, desc:"商圈年轻白领，基金卖得动"},
-      {id:"spb", name:"沙坪坝营业部", star:3, rent:6,  mgr:null, deco:0, ramp:1, building:0, aum:600000, desc:"大学城，开户多、资产少、流失快"},
+      {id:"jfb", name:"解放碑营业部", star:5, rent:15, mgr:0, deco:1, ramp:1, building:0, aum:600000, desc:"九三年的老店，大户室里坐着半部重庆股市史"},
+      {id:"gyq", name:"观音桥营业部", star:4, rent:10, mgr:1, deco:0, ramp:1, building:0, aum:350000, desc:"商圈年轻白领，基金卖得动"},
+      {id:"spb", name:"沙坪坝营业部", star:3, rent:6,  mgr:null, deco:0, ramp:1, building:0, aum:250000, desc:"大学城，开户多、资产少、流失快"},
     ],
     emps:[
       {id:0, name:"冉建国", mk:5, mg:4, rk:2, flavor:"解放碑的定海神针，客户比公司还认他", salary:3.3, trait:"laoguming", fatigue:12, npcBound:"ran"},
@@ -1369,7 +1369,7 @@ function newGame(seed, chalId, routeId){
   applyTalents();
   S.candidates = genCandidates();
   const luo = npc("luo"); if(luo) S.luoStar = 3;
-  log("month","第1年1月 · 你接手渝江证券。客户资产300亿，全国第96。许伯衡把去年的报表推过来，没说话。");
+  log("month","第1年1月 · 你接手渝江证券。客户资产120亿，全国第125。许伯衡把去年的报表推过来，没说话。");
   if(S.chal) log("month", `【${chalOf().nm}】${chalOf().desc}`);
   if(HEADLESS){ chooseRoute(()=>{}, routeId); }
   else { renderAll(); chooseTalent(()=>chooseRoute(()=>showIntro())); }
@@ -1450,7 +1450,7 @@ function actBiz(){
     }},
     {t:"冲基金代销", s:"现金一次性进账、基金保有+；情绪亢奋时冲会埋雷", fn:()=>{
       spend();
-      const sold = Math.round(rnd(22000,40000) * (0.7+S.morale/200) * (mb>=3?1.5:1));
+      const sold = Math.round(rnd(9000,16000) * (0.7+S.morale/200) * (mb>=3?1.5:1));
       const feeIn = Math.round(sold*0.012);
       gain("cash", feeIn); S.fundHold += sold; S.track.fundSold += sold;
       S.flags.fundPush = S.month;
@@ -2304,7 +2304,9 @@ function strengthScore(){
   // 设计稿 4.5：aum×0.5 + 年化收入×20 + 评级加成，单位都是「亿」
   const aumYi = S.aum/10000;
   const inc12Yi = (S.incHist||[]).slice(-12).reduce((a,b)=>a+b,0)/10000;
-  const gb = {AAA:80, AA:60, A:30, BBB:0, BB:-30, B:-60, CCC:-100, CC:-130, C:-160, D:-200}[S.grade] || 0;
+  // 评级加减分要跟实力分的量级配套：客户资产 120 亿只折 60 分，
+  // 再扣 60 分等于直接清零，所以整体按新体量缩了一档
+  const gb = {AAA:34, AA:26, A:13, BBB:0, BB:-13, B:-26, CCC:-44, CC:-58, C:-72, D:-90}[S.grade] || 0;
   return aumYi*0.5 + inc12Yi*20 + gb;
 }
 function recalcRank(){
@@ -2312,8 +2314,8 @@ function recalcRank(){
   const mktMul = Math.pow(S.index/BALANCE.start.index, 0.7);
   const adj = strengthScore()/Math.max(0.4, mktMul);
   // 指数压缩：常数按开局状态定标，什么都不做就停在第 96。
-  // P3 把自营池从凭空的 10 亿改成真金白银的 4 亿，收入体量降了一档，这里重新拟过。
-  const r = clamp(Math.round(8 + 132*Math.exp(-(adj-106.8)/106.6)), 1, 140);
+  // P3 把自营池改成真金白银、客户资产从 300 亿缩到 120 亿之后，收入体量降了两档，这里重新拟过。
+  const r = clamp(Math.round(8 + 132*Math.exp(-(adj-50.6)/78)), 1, 140);
   return r;
 }
 
@@ -2568,19 +2570,18 @@ function settleCore(){
     S.track.bestRank = Math.min(S.track.bestRank, S.rank);
     lines.push(["行业排名", `${old} → ${S.rank}`]);
     // 董事长按季度看结果
-    const goalPace = 96 - (96-80)*(S.month/endM());
+    const goalPace = 125 - (125-100)*(S.month/endM());
     if(S.rank < goalPace-6) addFav("xu", 4);
     // 季度扣分封顶：一个季度最多掉 10 点，不然几项一叠耐心撑不到第二年
     let cut = 0;
     const grace = S.flags.bearStart && S.month<=12;   // 熊市开局：头一年他不问结果
     // 排名分两档：差一点他念叨一句，差得离谱才真扣
-    if(S.rank > goalPace+34) cut += BALANCE.xu.quarterPenalty;
-    else if(S.rank > goalPace+16) cut += 10;
+    if(S.rank > goalPace+28) cut += BALANCE.xu.quarterPenalty;
+    else if(S.rank > goalPace+12) cut += 6;
     // 他看的是最近半年的经营，不是累计——累计里全是开营业部、升系统这种一次性投入
     const recent = (S.pnlHist||[]).slice(-6).reduce((a,b)=>a+b,0);
-    if(S.profitCum < 0) cut += 3;                       // 三年下来还在亏，他要问
-    if(recent < -sixMonthCost()*0.6) cut += 4;
-    if(recent < -sixMonthCost()*1.6) cut += 4;
+    if(recent < -sixMonthCost()*1.0) cut += 4;
+    if(recent < -sixMonthCost()*2.2) cut += 4;
     if(S.cash < threeMonthCost()) cut += 6;
     if((S.fines||0) > (S._xuFines||0)){ cut += 6; S._xuFines = S.fines; }
     if(S.risk>=60) cut += 3;
@@ -2604,7 +2605,7 @@ function settleCore(){
   if(S.pendingBlow && S.month>=S.pendingBlow.at){
     const b = S.pendingBlow; S.pendingBlow = null;
     S.track.ibBlown++;
-    fine(Math.round(rnd(1000,3000)), `${b.name}财务造假，保荐机构未勤勉尽责`);
+    fine(Math.round(rnd(600,1800)), `${b.name}财务造假，保荐机构未勤勉尽责`);
     S.suspend = BALANCE.ib.blowMonths;
     const ord = BALANCE.grade.order, gi = ord.indexOf(S.grade);
     if(gi<ord.length-1) S.grade = ord[gi+1];
@@ -2972,21 +2973,21 @@ const SCRIPTS = {
 
 他一直站着，没坐。窗外是晚上九点的江北嘴，对面楼的灯还亮着一半。
 
-自营池是十个亿。满仓的话，往后每涨一个点是一千二百万，跌一个点也是一千二百万。账在罗劲手里，钱是公司的。三年任期已经过了一半。
+满仓是两个亿——公司账上一共三亿五，这两个亿划出去就回不来，除非卖。往后大盘每涨一个点，这两个亿就多两百四十万，跌一个点也是两百四十万。账在罗劲手里，钱是公司的。三年任期已经过了一半。
 
 沈清禾下午来过一趟，只说了一句：这种事最好开个会，会上说的话她好记下来。`,
     opts:()=>[
       {t:"满仓", s:"自营调到满仓，罗劲好感+12", fn:()=>{
-        S.prop = 2; addFav("luo",12); gain("morale",3);
+        propMove(2); addFav("luo",12); gain("morale",3);
         S.track.maniaFull = true;
-        log("good","自营调到满仓。罗劲当晚就把单子挂出去了，第二天开盘前全部成交。<b>十个亿全压在市场里。</b><span style='color:var(--dim)'>他出门的时候在门口停了一下，说了句「谢谢您信我」，然后把门带上了。</span>", true);
+        log("good","自营调到满仓。罗劲当晚就把单子挂出去了，第二天开盘前全部成交。<b>两个亿从账上划了出去，全压在市场里。</b><span style='color:var(--dim)'>他出门的时候在门口停了一下，说了句「谢谢您信我」，然后把门带上了。</span>", true);
       }},
       {t:"维持现在的档位", s:"罗劲好感-6", fn:()=>{
         addFav("luo",-6);
         log("","你说这个位置就到这儿，不加了。他「行」了一声，把那张纸折成两折放进衬衫口袋里。走的时候门带得不重，也没回头。<span style='color:var(--dim)'>第二天他照常来开晨会，没再提这件事。</span>", true);
       }},
       {t:"清仓", s:"自营空仓，罗劲好感-14，士气-3", fn:()=>{
-        S.prop = 0; addFav("luo",-14); gain("morale",-3);
+        propMove(0); addFav("luo",-14); gain("morale",-3);
         S.track.maniaClear = true;
         log("","自营全部清仓，分三天出的。出完那天大盘又涨了两个点，账上少赚了三千多万。<b>自营空仓。</b><span style='color:var(--dim)'>罗劲在自营部群里发了两个字：收到。此后一个月没再单独找过你。</span>", true);
       }},
@@ -3096,7 +3097,7 @@ const SCRIPTS = {
       greyOpt({t:"推给罗劲", s:"许伯衡好感-5，罗劲离职，士气-12", fn:()=>{
         addFav("xu",-5); gain("morale",-12); gain("dirt",1);
         const luo = npc("luo"); luo.fav = 0; luo.gone = true; S.flags.luoGone = S.month;
-        S.prop = 0; S.luoStar = 0;
+        propMove(0); S.luoStar = 0;
         log("bad","你说自营那一块的仓位判断是投资部提的方案，你是基于他们的专业意见做的批复。许伯衡没追问，宣布散会。<b>罗劲第二天早上交了辞职信，一句话没多说，权限当天就交了。</b>自营清仓。<span style='color:var(--dim)'>他工位上那张曲线打印纸还压在键盘底下。保洁第二周当废纸收走了。士气-12。</span>", true);
       }}),
       {t:"把沈清禾的纪要拿出来", s:"证明你拒过额度（需沈清禾好感≥60）", disabled:fav("shen")<60, fn:()=>{
@@ -3196,26 +3197,26 @@ const EVENTS = [
 
 你打电话过去问能不能少要点。代销部那边说：
 
-「这不是我们挑的。这家公募是股东那边的关系，额度按渠道规模分的，三个亿已经是照顾我们了。别家分了六个亿。」
+「这不是我们挑的。这家公募是股东那边的关系，额度按渠道规模分的，一个亿两千万已经是照顾我们了。别家分了三个亿。」
 
 「您要是实在卖不掉，可以退。退回去我这边好交代，就是明年这家的爆款我们也别想拿到额度了。」
 
-三个亿摊到三家营业部，一个人头上一千多万，一周。全力卖，钱是能到手的，客户经理这一周也别想睡好。`,
+一亿二摊到三家营业部，一个人头上四百来万，一周。全力卖，钱是能到手的，客户经理这一周也别想睡好。`,
    opts:()=>[
      {t:"全力卖", s:"现金+180万，基金保有+3亿，全员倦怠+8", fn:()=>{
-       gain("cash",180); S.fundHold += 30000; S.track.fundSold += 30000;
+       gain("cash",180); S.fundHold += 12000; S.track.fundSold += 12000;
        S.emps.forEach(e=>e.fatigue=clamp(e.fatigue+8,0,100));
        S.flags.fundPush = S.month;
        if(moodBand()>=3){ S.hotFund = (S.hotFund||0)+30000; }
-       log("good","一周卖完了三个亿，最后两天是靠客户经理挨个打电话打出来的。<b>手续费一次性入账 180万，基金保有 +3亿，全员倦怠+8。</b>" + (moodBand()>=3?"<span style='color:var(--dim)'>冉建国在群里回了个「收到」，没别的话。这个位置卖出去的东西，他心里有数。</span>":""));
+       log("good","一周卖完了一亿二，最后两天是靠客户经理挨个打电话打出来的。<b>手续费一次性入账 180万，基金保有 +1.2亿，全员倦怠+8。</b>" + (moodBand()>=3?"<span style='color:var(--dim)'>冉建国在群里回了个「收到」，没别的话。这个位置卖出去的东西，他心里有数。</span>":""));
      }},
      {t:"卖一半，剩下的退回", s:"现金+90万，许伯衡好感-4", fn:()=>{
-       gain("cash",90); S.fundHold += 15000; addFav("xu",-4);
+       gain("cash",90); S.fundHold += 6000; addFav("xu",-4);
        log("","卖了一个半亿，剩下的退了。代销部一句话没回，把额度收了。<b>手续费 90万。</b>过了两周许伯衡在例会上提了一句：「股东那边的事，能配合还是配合一下。」没点名，但大家都知道说的是这件事。许伯衡好感-4。");
      }},
      greyOpt({t:"让员工自己买一点凑数", s:"士气-6", fn:()=>{
-       gain("cash",180); S.fundHold += 30000; gain("morale",-6);
-       log("bad","任务分到人头，差多少自己补。三个亿卖完了，其中有两千多万是员工自己的钱。<b>现金+180万，基金保有+3亿。</b><span style='color:var(--dim)'>三个月后有人在茶水间算自己亏了多少，算到一半不算了。士气-6。</span>");
+       gain("cash",180); S.fundHold += 12000; gain("morale",-6);
+       log("bad","任务分到人头，差多少自己补。一亿二卖完了，其中有一千来万是员工自己的钱。<b>现金+180万，基金保有+1.2亿。</b><span style='color:var(--dim)'>三个月后有人在茶水间算自己亏了多少，算到一半不算了。士气-6。</span>");
      }}),
    ]},
   /* E04 */
@@ -3230,13 +3231,13 @@ const EVENTS = [
 
 「我不是让您现在就批。我是想让您知道，这个位置，半仓是在浪费。」
 
-这是他头一回单独为了额度来找你。自营池十个亿，现在用了五个。`,
+这是他头一回单独为了额度来找你。满仓两个亿，现在放着八千万。`,
    opts:()=>[
-     {t:"加到满仓", s:"自营档位2，罗劲好感+8", fn:()=>{ S.prop=2; addFav("luo",8);
-       log("good","自营调到满仓。他说了声「要得」，拿起那张表就出去了，走得很快。<b>十个亿全在市场里。</b>罗劲好感+8。"); }},
+     {t:"加到满仓", s:"自营档位2，罗劲好感+8", fn:()=>{ propMove(2); addFav("luo",8);
+       log("good","自营调到满仓。他说了声「要得」，拿起那张表就出去了，走得很快。<b>账上又划出去一亿二，两个亿全在市场里。</b>罗劲好感+8。"); }},
      {t:"维持", s:"罗劲好感-3", fn:()=>{ addFav("luo",-3);
        log("","你说再看一个月。他说了句「行」，走的时候顺手把门带上了，带得不重。<span style='color:var(--dim)'>那张净值表他留在了你桌上。</span>罗劲好感-3。"); }},
-     {t:"减到空仓", s:"罗劲好感-10，士气-2", fn:()=>{ S.prop=0; addFav("luo",-10); gain("morale",-2);
+     {t:"减到空仓", s:"罗劲好感-10，士气-2", fn:()=>{ propMove(0); addFav("luo",-10); gain("morale",-2);
        log("","你让自营先清出来，理由是现在公司现金流比收益重要。他愣了两秒，说「明白」。<b>当天下午在自营部群里发了一句「收到」，之后就没说话了。</b>罗劲好感-10，士气-2。"); }},
    ]},
   /* E05 */
@@ -3465,11 +3466,11 @@ const EVENTS = [
      {t:"不加", s:"罗劲好感-10", fn:()=>{ addFav("luo",-10);
        log("","你说现在不是摊成本的时候，是守现金的时候。他没争，把纸拿走了。<b>这次门带得有点重。</b><span style='color:var(--dim)'>此后三个月他没有再提过额度的事。</span>罗劲好感-10。"); }},
      {t:"加", s:"自营满仓，股灾里继续亏", fn:()=>{
-       S.prop = 2; addFav("luo",8);
+       propMove(2); addFav("luo",8);
        log("bad","额度批了，两天内建满。<b>建完第三天又是一个跌停。</b>成本是摊下来了，敞口也翻了一倍。<span style='color:var(--dim)'>下个月那张报表长什么样，你已经能猜到。</span>", true);
      }},
      {t:"清仓，认亏", s:"自营空仓，士气-4，罗劲好感-12", fn:()=>{
-       S.prop = 0; gain("morale",-4); addFav("luo",-12);
+       propMove(0); gain("morale",-4); addFav("luo",-12);
        log("","全平了，两天出完。亏的数字当月计入损益，白纸黑字写进报表，董事会上没人提，但都看见了。<b>自营空仓。</b><span style='color:var(--dim)'>罗劲那周请了三天假。回来以后照常上班，就是不怎么说话了。士气-4。</span>", true);
      }},
    ]},
@@ -3555,13 +3556,13 @@ const EVENTS = [
   {id:"e21", title:"军令状", once:true, force:m=>m===2, weight:0,
    body:()=>`许伯衡叫你去他办公室，桌上摆着两张纸。
 
-第一张是打印出来的行业排名表，全国一百四十家券商，按总资产排的。渝江在第九十六位。他用红笔在下面画了一条线，线的位置在第八十位。
+第一张是打印出来的行业排名表，全国一百四十家券商，按总资产排的。渝江在第一百二十五位。他用红笔在下面画了一条线，线的位置在第一百位。
 
 第二张是空白的 A4 纸。
 
 「你上个月说的那些，我都听了。」他把老花镜摘下来，「今天我不听方案，我就说一个数。」
 
-「三年，进八十。」
+「三年，进一百。」
 
 「这个数不是我拍的，是股东那边给我的。他们给我的时候我也想问凭什么，但是我没问，因为问了也没用。」
 
@@ -3574,11 +3575,11 @@ const EVENTS = [
 ${curRoute().xu}` : ""}`,
    opts:()=>[
      {t:"签", s:"许伯衡好感+8", fn:()=>{ addFav("xu",8); S.flags.pledge = 1;
-       log("good","你在那张白纸上写了「三年，进八十」，签了名，写了日期。他接过去看了一眼，把两张纸一起收进抽屉，锁了。<b>没给你复印件。</b><span style='color:var(--dim)'>后来的三年里，每次季度会他都不提这件事。但你知道那张纸在哪儿。许伯衡好感+8。</span>", true); }},
+       log("good","你在那张白纸上写了「三年，进一百」，签了名，写了日期。他接过去看了一眼，把两张纸一起收进抽屉，锁了。<b>没给你复印件。</b><span style='color:var(--dim)'>后来的三年里，每次季度会他都不提这件事。但你知道那张纸在哪儿。许伯衡好感+8。</span>", true); }},
      {t:"不签，但口头答应", s:"许伯衡好感+2", fn:()=>{ addFav("xu",2);
        log("","你说这个数你会往这个方向做，但字就不签了，签了反而像做样子。<b>他说：「也行。」</b>然后把空白那张纸也一起收了起来。许伯衡好感+2。", true); }},
      {t:"说 80 名不现实", s:"许伯衡好感-6，士气+4", fn:()=>{ addFav("xu",-6); gain("morale",4);
-       log("","你把账摊开跟他算了一遍：现在的资本金、人手、网点数量，三年进八十要靠什么，缺口有多大，这个缺口不是努力能补上的。讲了二十分钟。<b>他听完说：「你是第一个跟我算账的。」</b>然后把那张排名表收了起来，没再说那个数。<span style='color:var(--dim)'>这件事第二天在中层里传开了，有人说这个总经理敢说实话。许伯衡好感-6，士气+4。</span>", true); }},
+       log("","你把账摊开跟他算了一遍：现在的资本金、人手、网点数量，三年进一百要靠什么，缺口有多大，这个缺口不是努力能补上的。讲了二十分钟。<b>他听完说：「你是第一个跟我算账的。」</b>然后把那张排名表收了起来，没再说那个数。<span style='color:var(--dim)'>这件事第二天在中层里传开了，有人说这个总经理敢说实话。许伯衡好感-6，士气+4。</span>", true); }},
    ]},
   {id:"e22", title:"新财富拉票", weight:8, phase:["warm","mania","recover"],
    body:()=>`贺予非拿着一张名单来找你，上面是六个基金经理的名字和所在机构，三个在上海，两个在深圳，一个在北京。
@@ -3594,7 +3595,7 @@ ${curRoute().xu}` : ""}`,
 沈清禾知道这件事，提醒了一句：这种场合别谈业务，尤其别谈分仓。谈了就是利益输送。`,
    opts:()=>[
      {t:"去", s:"1 精力 · 现金-120万，贺予非好感+10，分仓收入+", disabled:S.energy<=0, fn:()=>{
-       spend(); gain("cash",-120); addFav("he",10); S.fundHold += 4000;
+       spend(); gain("cash",-120); addFav("he",10); S.fundHold += 1600;
        log("good","三个饭局，两天跑完，最后一场喝到凌晨一点半。全程没谈分仓，只谈了研究覆盖和路演安排。<b>第二天早上贺予非发来三条消息，都是「收到」。</b>后面两个月，这三家的分仓量都有增加。现金-120万，贺予非好感+10。");
      }},
      {t:"让他自己去", s:"贺予非好感-5", fn:()=>{ addFav("he",-5);
@@ -4136,10 +4137,10 @@ EVENTS.push(
    if(f>=30) return [
      {t:"加薪留人", s:"现金-400万，罗劲好感+15", fn:()=>{ gain("cash",-400); addFav("luo",15); gain("morale",3);
        log("good","你没跟他谈钱，先跟他谈了两个钟头这两年的账：哪几笔是判断对了，哪几笔是运气，哪一笔是真的错了。<b>谈完才说薪酬方案。</b><span style='color:var(--dim)'>他留下来了，签的三年。他说：「我不是为钱。我是想把那一笔做回来。」现金-400万，罗劲好感+15。</span>", true); }},
-     {t:"放他走", s:"罗劲离职，自营清仓", fn:()=>{ const n=npc("luo"); n.fav=0; n.gone=1; S.prop=0; S.luoStar=1; gain("morale",-6);
+     {t:"放他走", s:"罗劲离职，自营清仓", fn:()=>{ const n=npc("luo"); n.fav=0; n.gone=1; propMove(0); S.luoStar=1; gain("morale",-6);
        log("","你说这个平台给不了他三倍，留下来对他不公平。他点了点头，办了手续，交接做了两周，做得很干净。<b>自营清仓。</b><span style='color:var(--dim)'>半年后同业群里有人发他的净值曲线，很好看。有人问这是哪家，底下有人回：原来渝江那个。士气-6。</span>", true); }},
    ];
-   return [{t:"（批了）", s:"自营清仓，士气-5", fn:()=>{ const n=npc("luo"); n.fav=0; n.gone=1; S.prop=0; S.luoStar=1; gain("morale",-5);
+   return [{t:"（批了）", s:"自营清仓，士气-5", fn:()=>{ const n=npc("luo"); n.fav=0; n.gone=1; propMove(0); S.luoStar=1; gain("morale",-5);
      log("bad","人事处按流程办的，三天走完。离职面谈他没来，说在外地。<b>自营清仓，剩下的仓位分两天出掉。</b><span style='color:var(--dim)'>那张曲线纸，保洁第二周当废纸收走了。士气-5。</span>", true); }}];
  }},
 
@@ -4884,7 +4885,7 @@ EVENTS.push(
    return [{t:"（没有选项）", s:"罚单 + 风险大涨", fn:()=>{
      fine(Math.round(rnd(300,700)), "从业人员利用未公开信息交易");
      gain("risk",18); gain("morale",-14); gain("dirt",2);
-     const n = npc("luo"); n.fav = 0; n.gone = 1; S.prop = 0; S.luoStar = 1;
+     const n = npc("luo"); n.fav = 0; n.gone = 1; propMove(0); S.luoStar = 1;
      log("bad","<b>罗劲被立案调查，公司被认定内控失效，连带受罚。自营账户全部清仓，投资部暂停新增投资三个月。</b><span style='color:var(--dim)'>他的工位一个月后才清干净。清的时候在抽屉里找到一沓打印纸，全是各种曲线。士气-14，风险+18。</span>", true);
    }}];
  }},
@@ -5117,7 +5118,7 @@ const S_FORCE2 = {
 
 「鼓励，不是要求。」她补了一句，「也就是说，平了不算错，不平也不算错。出了事，都算你的。」
 
-风控主任最后说：「还有一条，公司自己拿两个亿过桥，先把机构那三个户的缺口垫上。这个钱不是给客户的，是公司自己承担风险。您如果要这么办，得有人批。」`,
+风控主任最后说：「还有一条，公司自己拿一个亿过桥，先把机构那三个户的缺口垫上。这个钱不是给客户的，是公司自己承担风险。您如果要这么办，得有人批。」`,
   opts:()=>[
     {t:"全平", s:"损失可控，口碑-6，机构客户走光", fn:()=>{
       const hole = Math.round(S.margin*BALANCE.margin2.crashLoss*0.8);
@@ -5141,13 +5142,13 @@ const S_FORCE2 = {
         log("good", `<b>缓了一周，下周止跌了。</b>私募那边真的补上了钱，两个产业资本追加了质押物。三个户一个都没平。<span style="color:var(--dim)">沈清禾把这一周的每一次沟通都做了记录，一共十九页，她说这个将来是要给人看的。</span>口碑+4。`, true);
       }
     }},
-    {t:"要股东借款两个亿过桥", s:"许伯衡-10，记一笔年息 6% 的股东借款", fn:()=>{
+    {t:"要股东借款一个亿过桥", s:"许伯衡-10，记一笔年息 6% 的股东借款", fn:()=>{
       S.bonds = S.bonds||[];
-      S.bonds.push({id:"share", nm:"股东借款", amt:20000, rate:0.06, due:S.month+12});
-      gain("cash",20000);
+      S.bonds.push({id:"share", nm:"股东借款", amt:10000, rate:0.06, due:S.month+12});
+      gain("cash",10000);
       addFav("xu",-10); gain("trust",3);
       S.margin = Math.round(S.margin*0.72);
-      log("", `<b>两个亿的股东借款，年息六个点，一年后还。</b>许伯衡在电话里只问了一句：「这两个亿垫下去，能不能保证不出第三批？」你说不能保证。他沉默了大概五秒，说「那就打」。<span style="color:var(--dim)">三个机构户保住了，散户那部分还是平了。许伯衡好感-10。</span>`, true);
+      log("", `<b>一个亿的股东借款，年息六个点，一年后还。</b>许伯衡在电话里只问了一句：「这一个亿垫下去，能不能保证不出第三批？」你说不能保证。他沉默了大概五秒，说「那就打」。<span style="color:var(--dim)">三个机构户保住了，散户那部分还是平了。许伯衡好感-10。</span>`, true);
     }},
   ],
 };
@@ -5283,7 +5284,7 @@ EVENTS.push(
    {t:"不追", s:"许伯衡好感-3", fn:()=>{ addFav("xu",-3);
      log("","你说这个位置不加量。代销部有点意外，说那额度就给别家了。<b>那三个亿后来给了华渝，他们两天卖完。</b><span style='color:var(--dim)'>月度会上许伯衡问了一句为什么不做，你说了理由，他说「知道了」。许伯衡好感-3。</span>"); }},
    {t:"追加，但只卖给做过风测的老客户", s:"1 精力 · 现金+，口碑+3", disabled:S.energy<=0, fn:()=>{
-     spend(); const sold = Math.round(rnd(15000,25000));
+     spend(); const sold = Math.round(rnd(6000,10000));
      gain("cash", Math.round(sold*0.012)); S.fundHold += sold; gain("trust",3);
      log("good", `额度追加了，但是加了三道限制：只卖给风险评级 C3 以上、近一年做过风测、且单只产品占比不超过总资产两成的客户。名单是系统筛的，一共四百多人。<b>最后卖了 ${wanTxt(sold)}，不到额度的一半。</b><span style='color:var(--dim)'>代销部觉得可惜。一年以后这个决定省了很多事。口碑+3。</span>`); }},
  ]},
@@ -5310,10 +5311,10 @@ EVENTS.push(
 
 沈清禾：「历史上。」`,
  opts:()=>[
-   {t:"让他做", s:"基金保有++，风险+5", fn:()=>{ S.fundHold += 25000; gain("risk",5); gain("cash",300);
+   {t:"让他做", s:"基金保有++，风险+5", fn:()=>{ S.fundHold += 10000; gain("risk",5); gain("cash",300);
      log("","两个月做了两个半亿，全公司代销规模第一。<b>第三个月市场调整，那只产品回撤了百分之十一，超过了历史最大值。</b><span style='color:var(--dim)'>他开始不接电话了。客服那边一天接三十多个咨询电话。风险+5。</span>"); }},
    {t:"先让合规过一遍话术", s:"1 精力 · 基金保有+，口碑+3", disabled:S.energy<=0, fn:()=>{
-     spend(); S.fundHold += 12000; gain("trust",3); addFav("shen",5); gain("cash",150);
+     spend(); S.fundHold += 5000; gain("trust",3); addFav("shen",5); gain("cash",150);
      log("good","话术改了七稿。最后定下来的版本里，「跟存款差不多」这类说法全部删掉，换成了明确的回撤区间和历史极值提示，另外要求每次销售必须把最大回撤念出来。<b>卖得慢了一半，两个月做了一个两千万。</b><span style='color:var(--dim)'>第三个月市场调整的时候，这批客户一个投诉都没有。口碑+3，沈清禾好感+5。</span>"); }},
    {t:"不要这个人", s:"士气-2", fn:()=>{ gain("morale",-2);
      log("","方案没批，人也在三个月后走了。<b>他去了华渝。</b><span style='color:var(--dim)'>半年后华渝因为「固收+」产品的销售适当性问题吃了一张罚单，通报里提到了话术不规范。士气-2。</span>"); }},
@@ -5798,7 +5799,7 @@ const ROUTES = [
    done:()=>S.netInflow/BALANCE.start.aum >= 0.45},
 
   {id:"ib", nm:"投行突围", patron:"zhou", who:"周砚",
-   pitch:"三百亿的客户资产养不活一家券商，一单 IPO 能顶三年佣金。走这条路，也可能一单把公司搭进去。",
+   pitch:"一百二十亿的客户资产养不活一家券商，一单 IPO 能顶三年佣金。走这条路，也可能一单把公司搭进去。",
    bonus:"周砚初始好感 +12，开局四个保代（别的路线三个）",
    goal:"干净过会一单 IPO，或者做完两单股权项目",
    xu:"「投行这条线，成一单顶三年佣金。也能一单把公司搭进去。」",
@@ -5809,21 +5810,21 @@ const ROUTES = [
   {id:"research", nm:"投研驱动", patron:"he", who:"贺予非 + 罗劲",
    pitch:"研究所是卖方业务里最慢的一门，也是唯一能让同行高看一眼的。顺带把自营做起来。",
    bonus:"开局已有一星研究所、建设费减半，罗劲 alpha +0.2%/月",
-   goal:"研究所 ≥ 4 星、分仓累计 ≥ 1.6 亿，且自营三年为正",
+   goal:"研究所 ≥ 4 星、分仓累计 ≥ 9000 万，且自营三年为正",
    xu:"「研究所我不懂。你告诉我它什么时候开始挣钱。」",
    apply:s=>{ const n=s.npcs.find(x=>x.id==="he"); if(n) n.fav+=8;
      s.lab=1; s.labStar=1; s.flags.cheapLab=1; s.flags.routeRs=1; },
-   now:()=>`研究所 ${S.labStar}/4 星　·　分仓累计 ${wanTxt(S.track.labIncome||0)}/1.6亿`,
-   done:()=>S.labStar>=4 && (S.track.labIncome||0)>=16000 && ((S.propCash||0)-(S.propCost||0)+(S.track.propRealized||0))>0},
+   now:()=>`研究所 ${S.labStar}/4 星　·　分仓累计 ${wanTxt(S.track.labIncome||0)}/9000万`,
+   done:()=>S.labStar>=4 && (S.track.labIncome||0)>=9000 && ((S.propCash||0)-(S.propCost||0)+(S.track.propRealized||0))>0},
 
   {id:"steady", nm:"稳健合规", patron:"shen", who:"沈清禾",
    pitch:"这行出事的公司九成不是亏死的，是做了不该做的事。三年后你我都还能坐在这儿，就算赢。",
    bonus:"沈清禾初始好感 +12，风险回归基准 −4",
-   goal:"案底 0，且评级从没掉到 BB 以下",
+   goal:"案底 0，三年一张罚单都没有",
    xu:"「我要的不是第一，是三年后你我都还能坐在这儿。」",
    apply:s=>{ const n=s.npcs.find(x=>x.id==="shen"); if(n) n.fav+=12; s.flags.routeSt=1; },
-   now:()=>`案底 ${S.dirt} 桩　·　评级最低 ${(S.grades||[]).length?S.grades.map(g=>g.g).slice().sort((a,b)=>BALANCE.grade.order.indexOf(b)-BALANCE.grade.order.indexOf(a))[0]:"—"}`,
-   done:()=>S.dirt===0 && !(S.grades||[]).some(g=>GRADE_BAD.includes(g.g))},
+   now:()=>`案底 ${S.dirt} 桩　·　罚单 ${S.fines||0} 张`,
+   done:()=>S.dirt===0 && (S.fines||0)===0},
 ];
 function routeOf2(){ return S.route || null; }
 function curRoute(){ return ROUTES.find(r=>r.id===S.route) || null; }
@@ -5840,7 +5841,7 @@ function chooseRoute(next, forceId){
       log("month", `<b>这三年走「${r.nm}」。</b>${r.goal}。${r.who}是你的人。`, true);
       renderAll(); next(); }}));
   showModal("这三年，你想做成什么",
-`<p style="margin-bottom:10px">许伯衡只给了一个数：三年进八十。怎么进，他不管。</p>
+`<p style="margin-bottom:10px">许伯衡只给了一个数：三年进一百。怎么进，他不管。</p>
 <p style="margin-bottom:10px">全国一百四十家券商，能活下来的小公司都有一门自己的手艺。四条路，你挑一条。</p>
 <p>挑了不是锁死——别的业务照样能做，只是这一条上会有专门的事找上门，结局也按这条算。</p>`,
     opts, true);
@@ -5875,7 +5876,7 @@ EVENTS.push(
      inflow(Math.round(S.aum*0.004), "股民学校带来的开户");
      log("good","<b>股民学校开起来了，每周六上午两小时。</b>第一节课来了十九个人，第三节课来了四十多，居委会又搬了一批凳子过去。冉建国自己讲了前六节，后面交给了观音桥的两个客户经理。<span style='color:var(--dim)'>第二个月有个阿姨拿着一份别家推给她的「保本理财」合同来问真假，冉建国看完说这个不是保本的，条款在第七页。她当场就没签。这件事后来在那片小区里传开了。口碑+7。</span>"); }},
    greyOpt({t:"课上顺带推基金", s:"代销一次性进账，口碑-6，案底+1", fn:()=>{
-     const sold = Math.round(rnd(9000,16000));
+     const sold = Math.round(rnd(4000,6500));
      gain("cash", Math.round(sold*0.012)); S.fundHold += sold;
      gain("trust",-6); gain("dirt",1); addFav("ran",-8); addFav("shen",-5);
      log("bad","<b>第四节课讲到「如何挑选基金」，PPT 最后三页是我们代销的三只产品。</b>当场签了二十一份，一个月内卖出去 "+wanTxt(sold)+"。<span style='color:var(--dim)'>第六周居委会主任把冉建国叫到办公室谈了半小时，之后场地收回。冉建国回来一句话没说，把讲义收进了柜子。口碑-6，案底+1。</span>"); }}),
@@ -5902,11 +5903,11 @@ EVENTS.push(
  opts:()=>[
    {t:"给单间，不给消息", s:"现金-60万装修，客户资产+，秦孃孃-6", fn:()=>{
      gain("cash",-60); addFav("qin",-6); addFav("ran",2);
-     inflow(28000, "新大户转入");
+     inflow(12000, "新大户转入");
      log("good","<b>最里头那两个位子打通了，装了一道磨砂玻璃门，花了六十万。</b>消息那一条冉建国当面回绝了，原话是「我们研究所出的东西什么时候公开什么时候给您，一分钟都不会早」。那位客户想了两天，还是把钱转了过来。<span style='color:var(--dim)'>秦孃孃那天没说什么，只是把自己的位子往窗边挪了半米。客户资产 +2.8 亿。</span>"); }},
    greyOpt({t:"消息也给", s:"客户资产++，风险+8，案底+2", fn:()=>{
      gain("risk",8); gain("dirt",2); addFav("qin",-10); addFav("shen",-8);
-     inflow(52000, "新大户转入");
+     inflow(22000, "新大户转入");
      log("bad","<b>五点二亿转了进来，转完第三天他就开始在群里问东西。</b>研究所那边被交代了，深度报告发出之前先发到一个小群里，群里四个人。<span style='color:var(--dim)'>贺予非知道以后在办公室摔了一次门，第二天照常上班，什么都没说。风险+8，案底+2。</span>"); }}),
    {t:"劝退", s:"不进来，冉建国+8，口碑+3", fn:()=>{ addFav("ran",8); gain("trust",3); addFav("qin",5);
      log("","<b>冉建国下楼去跟他谈的，谈了二十分钟。</b>回来说人家很客气，说理解，钱转去了华渝。<span style='color:var(--dim)'>当天下午秦孃孃拎了一袋橘子上来，放在冉建国桌上，说是她乡下亲戚种的。她没提大户室的事。口碑+3。</span>"); }},
@@ -5927,7 +5928,7 @@ EVENTS.push(
 
 财务总监在旁边算过了：换过来以后两融的资金成本能降，一年省的钱不少。
 
-沈清禾提醒了一句：「客户保证金是第三方存管，搬家要每个客户点头。三百亿的资产，几十万个账户，一家一家通知，中间会流失。而且全放一家，万一这家银行出点什么事，我们没有第二条腿。」`,
+沈清禾提醒了一句：「客户保证金是第三方存管，搬家要每个客户点头。一百二十亿的资产，十几万个账户，一家一家通知，中间会流失。而且全放一家，万一这家银行出点什么事，我们没有第二条腿。」`,
  opts:()=>[
    {t:"签", s:"客户资产大增，两融资金成本降，风险+5", fn:()=>{
      gain("risk",5); gain("trust",-3); addFav("ran",8); addFav("shen",-6);
@@ -6840,8 +6841,8 @@ function renderAll(){
 }
 /* ============ P2 数值追加 ============ */
 Object.assign(BALANCE, {
-  poach:{ cost:[0,390,630,1020,1470,2100], moraleHit:3, riskHit:2 },
-  takeover:{ cost:4000, star:5, rent:16 },
+  poach:{ cost:[0,230,380,610,880,1260], moraleHit:3, riskHit:2 },
+  takeover:{ cost:2400, star:5, rent:16 },
 });
 
 /* ============ P2：四家对手的剧本 ============ */
@@ -7053,7 +7054,7 @@ EVENTS.push(
  opts:()=>[
    {t:"看看就好", s:"什么也不做", fn:()=>{ log("","你在群里没有回应，私下也没有找罗劲谈。<b>公司这边没有任何动作。</b><span style='color:var(--dim)'>那条视频在群里没人接话，第二天就沉下去了。罗劲也没再提。</span>"); }},
    {t:"我们也上", s:"自营满仓，两融放宽，风险+8", fn:()=>{
-     S.prop = 2; if(S.marginOn) S.marginLv = 2; gain("risk",8); addFav("luo",8); addFav("shen",-8);
+     propMove(2); if(S.marginOn) S.marginLv = 2; gain("risk",8); addFav("luo",8); addFav("shen",-8);
      log("bad","自营调到满仓，两融额度政策调到激进，担保品折算率跟着放宽。<b>一个月之内两融余额涨了三成，自营敞口翻倍。</b><span style='color:var(--dim)'>沈清禾在当月的风险报告里写了一段，标题是「关于近期风险偏好显著上升的提示」，一共四百字。她没有当面提。风险+8。</span>", true); }},
  ]},
 {id:"rs_ss2", title:"山城资本爆了", weight:0,
@@ -7396,7 +7397,7 @@ function finalEnding(failTitle, failText){
     const propLossRatio = Math.abs(S.track.crashPropLoss)/BALANCE.prop.pool;
     if(S.rank<=30 && S.dirt===0){
       title = "干净的第一名";
-      text = "三年前你接手的时候，渝江在第九十六位。今天的名单上，是第 "+S.rank+" 位。\n\n"+
+      text = "三年前你接手的时候，渝江在第一百二十五位。今天的名单上，是第 "+S.rank+" 位。\n\n"+
         "这三年没有一张罚单，没有一次现场检查被点名，没有一条需要事后解释的台账。分类评级三年分别是 "+
         (S.grades.map(g=>g.g).join("、")||"未参加")+"。\n\n"+
         "交接那天，沈清禾把三年的会议纪要装订成四册，放在你桌上。每一册的封面上写着起止日期，里面做了索引。\n\n"+
@@ -7412,7 +7413,7 @@ function finalEnding(failTitle, failText){
         "你不知道自己是判断对了，还是那天刚好心情不好。\n\n"+
         "罗劲有一次喝多了问你：「您当时到底是怎么想的？」\n\n"+
         "你说：「我也怕。」";
-    } else if(S.flags.sellBrand || S.rank>110){
+    } else if(S.flags.sellBrand || S.rank > BALANCE.start.rank+14){
       title = "牌子没了";
       text = "股东大会开了一个上午，表决通过得很快，赞成票超过九成。\n\n"+
         "交割用了四个月。牌照、客户、系统、人，一样一样清点，一样一样移交。清单一共一百三十七页。\n\n"+
@@ -7859,9 +7860,9 @@ function showIntro(){
 
 「这三年的事情，我只跟你说三句。」
 
-「第一，账上有八个亿，按现在的亏法能撑四年。所以你不用怕破产，你要怕的是别的。」
+「第一，账上有三亿五。听着不少，可是自营要占，两融要占，开一家营业部就是五千万。真到要用钱的时候，你会发现这三亿五不经花。」
 
-「第二，全国一百四十家，我们在第九十六。股东那边的意思是三年进八十。」
+「第二，全国一百四十家，我们在第一百二十五。股东那边的意思是三年进一百。」
 
 「第三，这个行业里出事的公司，九成不是亏死的，是做了不该做的事。」
 
@@ -7926,7 +7927,7 @@ function simRun(policy){
     while(S.energy>0){
       if(S.risk>=45){ gain("risk",-6); S.energy--; continue; }
       const a = ri(6);
-      if(a===0){ inflow(Math.round(26000*BALANCE.mood.inflowMul[moodBand()]), "sim"); gain("trust",1); S.energy--; }
+      if(a===0){ inflow(Math.round(10000*BALANCE.mood.inflowMul[moodBand()]), "sim"); gain("trust",1); S.energy--; }
       else if(a===1){ const n = S.npcs[ri(S.npcs.length)]; addFav(n.id, 6); gain("cash",-SOCIAL_COST[n.like]); S.socialed[n.id]=true; S.energy--; }
       else if(a===2){ gain("morale",7); gain("cash",-60); S.energy--; }
       else if(a===3){ const lv = ri(3); propMove(lv); S.energy--; }   // 走真实划转，不是直接改档位
