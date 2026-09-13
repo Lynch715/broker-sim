@@ -142,8 +142,14 @@ html[data-amb="crash"] .hdr{box-shadow:0 12px 30px rgba(0,0,0,.28),0 0 26px rgba
 .stat .delta{font-size:11px;height:14px}
 .up{color:var(--up)}.down{color:var(--down)}
 .pos{color:var(--good)}.neg{color:var(--bad)}
-.stat .tip{display:none;position:absolute;z-index:30;top:105%;left:50%;transform:translateX(-50%);width:200px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12px;color:var(--dim);text-align:left;line-height:1.5}
-.stat:hover .tip{display:block}
+.stat .tip{display:none;position:absolute;z-index:30;top:calc(100% + 6px);left:50%;transform:translateX(-50%);
+  width:max-content;max-width:min(260px,calc(100vw - 28px));
+  background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:9px 11px;
+  font-size:12px;color:var(--dim);text-align:left;line-height:1.6;box-shadow:0 12px 28px rgba(0,0,0,.5)}
+/* 贴边那两列往里收，不然窄屏上会被切掉半行字 */
+.stats .stat:nth-child(6n+1) .tip{left:0;right:auto;transform:none}
+.stats .stat:nth-child(6n)   .tip{left:auto;right:0;transform:none}
+@media(hover:hover){ .stat:hover .tip{display:block} }
 .stat.tipOn .tip{display:block}
 
 /* 精力 */
@@ -163,7 +169,9 @@ html[data-amb="crash"] .hdr{box-shadow:0 12px 30px rgba(0,0,0,.28),0 0 26px rgba
 .act{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;transition:.15s;user-select:none;min-height:66px}
 .act:hover{border-color:var(--gold);transform:translateY(-1px)}
 .act.off{opacity:.32;pointer-events:none}
-.act .ic{font-size:21px}
+.act .ic{height:26px;display:flex;align-items:center;justify-content:center;color:var(--gold);opacity:.92}
+.act .ic svg{width:26px;height:26px;display:block}
+.act:hover .ic{opacity:1}
 .act .nm{font-size:14px;font-weight:700;margin:3px 0 1px}
 .act .ds{font-size:11px;color:var(--dim)}
 
@@ -310,6 +318,9 @@ button.main:hover{filter:brightness(1.08);color:var(--ongold)}
   .mkt .pt{font-size:20px}
   #guide h2{font-size:25px}
   .modal{--mpad:15px}
+  .stats .stat:nth-child(3n+1) .tip{left:0;right:auto;transform:none}
+  .stats .stat:nth-child(3n)   .tip{left:auto;right:0;transform:none}
+  .stats .stat:nth-child(3n+2) .tip{left:50%;right:auto;transform:translateX(-50%)}
   .mask{padding:10px calc(10px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left))}
   .modal{max-height:92vh;max-height:92dvh}
 }
@@ -344,8 +355,8 @@ button.main:hover{filter:brightness(1.08);color:var(--ongold)}
       <div class="pt"><b>05</b><span><b>客户的钱不是公司的钱。</b>三百亿托管在你这儿，一分都不是你的。你能拿的只有佣金、尾佣、利息和承销费。这条记住了，你就比一半同行强。</span></div>
     </div>
     <button class="start" onclick="startFromGuide()">上任</button>
-    <button class="sec" id="guideGallery" style="display:none" onclick="showGallery()">📖 图鉴 · 结局 / 成就 / 天赋</button>
-    <button class="sec" id="guideChal" style="display:none" onclick="guideChallenge()">🎲 挑战模式 / 指定种子</button>
+    <button class="sec" id="guideGallery" style="display:none" onclick="showGallery()">图鉴 · 结局 / 成就 / 天赋</button>
+    <button class="sec" id="guideChal" style="display:none" onclick="guideChallenge()">挑战模式 / 指定种子</button>
   </div></div>
 </section>
 
@@ -365,10 +376,10 @@ button.main:hover{filter:brightness(1.08);color:var(--ongold)}
   </div>
 
   <div class="toolbar">
-    <button onclick="showGallery()">📖 图鉴</button>
-    <button onclick="showChallengePicker()">🎲 换个打法</button>
-    <button onclick="showSkin()">🎨 配色</button>
-    <button onclick="askRestart()">🔄 重开一局</button>
+    <button onclick="showGallery()">图鉴</button>
+    <button onclick="showChallengePicker()">换个打法</button>
+    <button onclick="showSkin()">配色</button>
+    <button onclick="askRestart()">重开一局</button>
   </div>
 
   <div class="stats" id="statBar"></div>
@@ -581,12 +592,12 @@ const DECO_COST = [0, 600, 1800];
 
 /* ============ 员工 ============ */
 const TRAITS = {
-  laoguming:{nm:"老股民",  ic:"📻", desc:"九十年代就在营业部看大盘，产出高，但爱替客户拿主意"},
-  wanghong: {nm:"网红体质",ic:"📱", desc:"直播开户、朋友圈刷屏，口碑涨得快，人也累得快"},
-  jiuzhuo:  {nm:"酒桌型",  ic:"🍶", desc:"应酬不用你出面，走关系省钱"},
-  shudaizi: {nm:"书呆子",  ic:"📚", desc:"风控星按1.5倍算，跑业务差点意思"},
-  lengtouqing:{nm:"愣头青",ic:"🔥", desc:"敢冲，产出高，风控星打七折"},
-  shouyang: {nm:"手痒",    ic:"👀", desc:"天天看着客户挣钱，自己也想试试"},
+  laoguming:{nm:"老股民", desc:"九十年代就在营业部看大盘，产出高，但爱替客户拿主意"},
+  wanghong: {nm:"网红体质", desc:"直播开户、朋友圈刷屏，口碑涨得快，人也累得快"},
+  jiuzhuo:  {nm:"酒桌型", desc:"应酬不用你出面，走关系省钱"},
+  shudaizi: {nm:"书呆子", desc:"风控星按1.5倍算，跑业务差点意思"},
+  lengtouqing:{nm:"愣头青", desc:"敢冲，产出高，风控星打七折"},
+  shouyang: {nm:"手痒", desc:"天天看着客户挣钱，自己也想试试"},
 };
 const TRAIT_IDS = Object.keys(TRAITS);
 const EMP_NAMES = ["陈斌","唐蕾","何小军","李婷","邓一凡","彭浩","马晓燕","王川","杨立","刘洋",
@@ -1064,9 +1075,9 @@ function rkPower(e){
 }
 function fatigueTag(e){
   const f = e.fatigue||0;
-  if(f>=85) return `<span class="tag" style="background:#4a2020;color:#e08080">🥵 快垮了 ${Math.round(f)}</span>`;
-  if(f>=70) return `<span class="tag" style="background:#4a3320;color:#e0a860">😪 疲惫 ${Math.round(f)}</span>`;
-  if(f>=50) return `<span class="tag" style="background:#3a3320;color:#c0b070">😐 有点累 ${Math.round(f)}</span>`;
+  if(f>=85) return `<span class="tag" style="background:#4a2020;color:#e08080"> 快垮了 ${Math.round(f)}</span>`;
+  if(f>=70) return `<span class="tag" style="background:#4a3320;color:#e0a860"> 疲惫 ${Math.round(f)}</span>`;
+  if(f>=50) return `<span class="tag" style="background:#3a3320;color:#c0b070"> 有点累 ${Math.round(f)}</span>`;
   return "";
 }
 function mgrCoef(o){
@@ -1259,7 +1270,7 @@ function newGame(seed, chalId){
   S.candidates = genCandidates();
   const luo = npc("luo"); if(luo) S.luoStar = 3;
   log("month","第1年1月 · 你接手渝江证券。客户资产300亿，全国第96。许伯衡把去年的报表推过来，没说话。");
-  if(S.chal) log("month", `【${chalOf().ic} ${chalOf().nm}】${chalOf().desc}`);
+  if(S.chal) log("month", `【${chalOf().nm}】${chalOf().desc}`);
   if(!HEADLESS){ renderAll(); chooseTalent(()=>showIntro()); }
 }
 
@@ -1297,12 +1308,12 @@ function needEnergy(){
   return false;
 }
 
-/* ---- 🏪 跑业务 ---- */
+/* ----  跑业务 ---- */
 function actBiz(){
   if(needEnergy()) return;
   const mb = moodBand();
   showModal("跑业务", `情绪${MOOD_NAME[mb]}，这个月换手 ${turnover().toFixed(1)} 倍。佣金${feeName()}。`, [
-    {t:"🏦 跑银行驻点开户", s:"客户资产净流入按情绪放大，口碑+1", fn:()=>{
+    {t:"跑银行驻点开户", s:"客户资产净流入按情绪放大，口碑+1", fn:()=>{
       spend();
       const base = 26000 * BALANCE.mood.inflowMul[mb] * (0.8+S.trust/200);
       inflow(Math.round(base), "驻点开户");
@@ -1310,7 +1321,7 @@ function actBiz(){
       log("good", `跑了一圈银行网点，谈下三个驻点。客户资产净流入 +${wanTxt(Math.round(base))}，口碑+1。`);
       afterAct();
     }},
-    {t:"📣 开户大会战", s:"客户资产大增，全员倦怠+8、士气-3（季度限一次）", disabled: S.pushQ===Math.ceil(S.month/3), fn:()=>{
+    {t:"开户大会战", s:"客户资产大增，全员倦怠+8、士气-3（季度限一次）", disabled: S.pushQ===Math.ceil(S.month/3), fn:()=>{
       spend(); S.pushMonth = true; S.pushQ = Math.ceil(S.month/3); S.track.push++;
       S.flags.crowd = S.month;
       const base = 62000 * BALANCE.mood.inflowMul[mb] * (0.8+S.trust/200);
@@ -1320,7 +1331,7 @@ function actBiz(){
       log("good", `<b>开户大会战。</b>沙坪坝在大学城摆了三天桌子，观音桥把会议室腾出来当开户区。客户资产 +${wanTxt(Math.round(base))}，全员倦怠+8，士气-3。`);
       afterAct();
     }},
-    {t:"💰 冲基金代销", s:"现金一次性进账、基金保有+；情绪亢奋时冲会埋雷", fn:()=>{
+    {t:"冲基金代销", s:"现金一次性进账、基金保有+；情绪亢奋时冲会埋雷", fn:()=>{
       spend();
       const sold = Math.round(rnd(22000,40000) * (0.7+S.morale/200) * (mb>=3?1.5:1));
       const feeIn = Math.round(sold*0.012);
@@ -1339,7 +1350,7 @@ function actBiz(){
   ]);
 }
 
-/* ---- 🍶 走关系 ---- */
+/* ----  走关系 ---- */
 function actSocial(){
   if(needEnergy()) return;
   const opts = S.npcs.map(n=>{
@@ -1379,23 +1390,23 @@ function checkUnlock(n){
   if(n.fav>=80 && !n.said80){ n.said80 = true; log("good", `<b>${n.name} 好感到 80。</b>${n.p80}。`, true); }
 }
 
-/* ---- 📋 抓内部 ---- */
+/* ----  抓内部 ---- */
 function actInternal(){
   if(needEnergy()) return;
   showModal("抓内部", "公司里的事，不抓就自己烂。", [
-    {t:"🎉 团建", s:"士气+7，现金-60万", fn:()=>{ spend(); gain("morale",7); gain("cash",-60);
+    {t:"团建", s:"士气+7，现金-60万", fn:()=>{ spend(); gain("morale",7); gain("cash",-60);
       S.emps.forEach(e=>e.fatigue=clamp((e.fatigue||0)-4,0,100));
       log("good","全公司去南山吃了顿饭，KTV 包到十二点。士气+7，现金-60万。"); afterAct(); }},
-    {t:"🔍 合规排查", s:"风险-6；有案底时可以处理一条", s2:1, fn:()=>{ spend(); gain("risk",-6);
+    {t:"合规排查", s:"风险-6；有案底时可以处理一条", s2:1, fn:()=>{ spend(); gain("risk",-6);
       if(S.dirt>0 && RNG()<0.55){ gain("dirt",-1); log("good","沈清禾带人翻了两周台账，补了一批留痕材料。风险-6，有一桩旧事算是圆过去了。"); }
       else log("good","合规排查做了一轮，流程理顺了些。风险-6。");
       addFav("shen",3); afterAct(); }},
-    {t:"🛋 轮休一个月", s:"全员倦怠-14，本月产出×0.75", fn:()=>{ spend(); S.restMonth = true; S.track.rest++;
+    {t:"轮休一个月", s:"全员倦怠-14，本月产出×0.75", fn:()=>{ spend(); S.restMonth = true; S.track.rest++;
       S.emps.forEach(e=>e.fatigue=clamp((e.fatigue||0)-14,0,100));
       gain("morale",4);
       log("","排了一个月轮休。营业部照开，人少一半。全员倦怠-14，本月产出打七五折。"); afterAct(); }},
-    {t:"👔 招聘", s:"人事处约了三个人", fn:()=>{ spend(); S.track.hire++; showHire(); }},
-    {t:"🎯 从同行挖人", s:"花钱，带客户来，也带风险", fn:()=>actPoach()},
+    {t:"招聘", s:"人事处约了三个人", fn:()=>{ spend(); S.track.hire++; showHire(); }},
+    {t:"从同行挖人", s:"花钱，带客户来，也带风险", fn:()=>actPoach()},
     {t:"← 返回"},
   ]);
 }
@@ -1408,7 +1419,7 @@ function showHire(){
   const team = BALANCE.cost.perEmpTeam;
   const opts = S.candidates.map((c,i)=>({
     t:`${c.name} 营${c.mk} 管${c.mg} 风${c.rk}`,
-    s:`${c.flavor}${c.trait?" · "+TRAITS[c.trait].ic+TRAITS[c.trait].nm:""}<br>月薪 ${c.salary}万 + 带队人力 ${team}万 = 每月 ${(c.salary+team).toFixed(1)}万`,
+    s:`${c.flavor}${c.trait?" · "+TRAITS[c.trait].nm:""}<br>月薪 ${c.salary}万 + 带队人力 ${team}万 = 每月 ${(c.salary+team).toFixed(1)}万`,
     fn:()=>{
       const e = {...c, id:S.empSeq++};
       S.emps.push(e);
@@ -1422,7 +1433,7 @@ function showHire(){
     opts);
 }
 
-/* ---- 📈 自营调仓 ---- */
+/* ----  自营调仓 ---- */
 function actProp(){
   const free = fav("luo")>=60;
   if(!free && needEnergy()) return;
@@ -1439,23 +1450,23 @@ function actProp(){
     [ mk(0,"空仓","不赚也不亏"), mk(1,"半仓","池子一半"), mk(2,"满仓","全压上去"), {t:"← 返回"} ]);
 }
 
-/* ---- 🏗 扩张 ---- */
+/* ----  扩张 ---- */
 function actExpand(){
   if(needEnergy()) return;
   const canOpen = S.outlets.length<6 && S.grade!=="BB" && S.grade!=="B" && S.grade!=="C";
   const opts = [];
-  opts.push({t:"🏪 开营业部", s: canOpen ? "看看还有哪些点位" : "评级 BB 以下不得新开营业部", disabled:!canOpen, fn:()=>showOpenOutlet()});
+  opts.push({t:"开营业部", s: canOpen ? "看看还有哪些点位" : "评级 BB 以下不得新开营业部", disabled:!canOpen, fn:()=>showOpenOutlet()});
   const lv = S.sysLevel;
   if(lv<3){
     const cost = BALANCE.cost.sysUpgrade[lv];
-    opts.push({t:`💻 升级交易系统（${lv}级 → ${lv+1}级）`, s:`现金-${cost}万，月维护+30万。系统等级决定疯牛期会不会宕机。`, disabled:S.cash<cost, fn:()=>{
+    opts.push({t:`升级交易系统（${lv}级 → ${lv+1}级）`, s:`现金-${cost}万，月维护+30万。系统等级决定疯牛期会不会宕机。`, disabled:S.cash<cost, fn:()=>{
       spend(); gain("cash",-cost); S.sysLevel++;
       log("good", `交易系统升到${S.sysLevel}级。现金-${cost}万。<span style="color:var(--dim)">技术部的人说，这回真能扛住了。上回也这么说的。</span>`, true);
       afterAct();
     }});
-  } else opts.push({t:"💻 交易系统已满级", s:"3级，疯牛期不会宕机", disabled:true});
-  if(!S.lab) opts.push({t:"🔬 建研究所", s:`现金-${S.flags.cheapLab?Math.round(BALANCE.research.cost/2):BALANCE.research.cost}万，之后每月拿分仓佣金`, fn:()=>buildLab()});
-  else opts.push({t:`🔬 挖研究员（研究所 ${S.labStar} 星）`, s:S.labStar>=5?"已经满星":`现金-${BALANCE.research.upCost*(S.labStar+1)}万，分仓每月+${BALANCE.research.perStar}万`, disabled:S.labStar>=5, fn:()=>upgradeLab()});
+  } else opts.push({t:"交易系统已满级", s:"3级，疯牛期不会宕机", disabled:true});
+  if(!S.lab) opts.push({t:"建研究所", s:`现金-${S.flags.cheapLab?Math.round(BALANCE.research.cost/2):BALANCE.research.cost}万，之后每月拿分仓佣金`, fn:()=>buildLab()});
+  else opts.push({t:`挖研究员（研究所 ${S.labStar} 星）`, s:S.labStar>=5?"已经满星":`现金-${BALANCE.research.upCost*(S.labStar+1)}万，分仓每月+${BALANCE.research.perStar}万`, disabled:S.labStar>=5, fn:()=>upgradeLab()});
   opts.push({t:"← 返回"});
   showModal("扩张", `账上现金 ${wanTxt(S.cash)}。当前营业部 ${S.outlets.length} 家，交易系统 ${S.sysLevel} 级。`, opts);
 }
@@ -1522,7 +1533,7 @@ function pickMgr(oi){
     fn:()=>assignMgr(oi, e.id)}));
   if(!opts.length){
     opts.push({t:"手上没有空闲的人", disabled:true});
-    opts.push({t:"👔 去招人", s:"花 1 精力，人事处约三个候选人来", disabled:S.energy<=0, fn:()=>actHire()});
+    opts.push({t:"去招人", s:"花 1 精力，人事处约三个候选人来", disabled:S.energy<=0, fn:()=>actHire()});
   }
   opts.push({t:"← 返回"});
   showModal(`${o.name} · 派主任`,
@@ -1648,7 +1659,7 @@ function ibDetail(i){
   const waiting = S.month < p.waitTo;
   const last = st.length-1;
   const opts = [];
-  opts.push({t:`🔍 尽调（第 ${p.dd+1} 次）`, s:`花 1 精力 + ${BALANCE.ib.ddCost}万。${p.dd===0?"揭开一半":"把底下的全看清"}`,
+  opts.push({t:`尽调（第 ${p.dd+1} 次）`, s:`花 1 精力 + ${BALANCE.ib.ddCost}万。${p.dd===0?"揭开一半":"把底下的全看清"}`,
     disabled:p.dd>=2 || p.stage>=2, fn:()=>ibDD(i)});
   if(p.stage<last){
     opts.push({t:`▶ 推进到「${st[p.stage+1]}」`,
@@ -1657,9 +1668,9 @@ function ibDetail(i){
   }
   const k = ibKnown(p);
   if(k!==null && k>=0.2 && p.stage<last){
-    opts.push({t:"🛠 要求整改再报", s:`工期 +${BALANCE.ib.fixDelay} 个月，把问题压下去一半`, fn:()=>ibFix(i)});
+    opts.push({t:"要求整改再报", s:`工期 +${BALANCE.ib.fixDelay} 个月，把问题压下去一半`, fn:()=>ibFix(i)});
   }
-  opts.push({t:"✖ 终止项目", s:"已收的费用不退，未收的不再确认", fn:()=>ibDrop(i)});
+  opts.push({t:"终止项目", s:"已收的费用不退，未收的不再确认", fn:()=>ibDrop(i)});
   opts.push({t:"← 返回", fn:()=>actIB()});
   showModal(p.name,
     `${p.flavor}\n\n当前：${st[p.stage]}已完成　已收 ${p.got}万 / 共 ${p.fee}万\n尽调 ${p.dd} 次　${ibRiskTxt(p)}` +
@@ -2005,7 +2016,7 @@ function settleCore(){
       S.emps = S.emps.filter(x=>x.id!==e.id);
       gain("morale",-8);
       log("bad", `<b>${e.name}提了辞职，交接没做完。</b>倦怠拉满的人是留不住的。士气-8。`, true);
-      lines.push(["⚠ 员工倦怠离职", e.name]);
+      lines.push([" 员工倦怠离职", e.name]);
     }
   }
 
@@ -2013,7 +2024,7 @@ function settleCore(){
   if(S.cash<0){
     S.negMonths++; gain("morale",-12);
     log("bad", `<b>账上是负数，工资靠垫。</b>士气-12。（连续${S.negMonths}个月）`);
-    lines.push(["⚠ 现金为负", "士气-12"]);
+    lines.push([" 现金为负", "士气-12"]);
   } else S.negMonths = 0;
   S.track.minCash = Math.min(S.track.minCash, S.cash);
 
@@ -2078,7 +2089,7 @@ function settleCore(){
     if(gi<ord.length-1) S.grade = ord[gi+1];
     gain("risk",20); addFav("xu",-15); addFav("zhou",-10);
     log("bad", `<b>${b.name}暴雷。</b>暂停保荐资格 ${BALANCE.ib.blowMonths} 个月，评级降一级，风险+20。`, true);
-    lines.push(["⚠ 保荐项目暴雷", b.name]);
+    lines.push([" 保荐项目暴雷", b.name]);
   }
 
   /* 12. 月末清理 */
@@ -2098,7 +2109,7 @@ function warnings(){
   if(S.risk>=70) w.push(["风险 "+Math.round(S.risk)+"，快压不住了", 1]);
   else if(S.risk>=55) w.push(["风险偏高", 2]);
   if(fav("xu")<=20) w.push(["许伯衡的耐心快用完了", 1]);
-  if(S.dirt>=3) w.push(["🗂 有些事，最好别让人翻出来", 2]);
+  if(S.dirt>=3) w.push([" 有些事，最好别让人翻出来", 2]);
   if(S.emps.some(e=>(e.fatigue||0)>=85)) w.push(["有人快垮了", 2]);
   const vacN = S.outlets.filter(o=>!o.building && o.mgr==null).length;
   if(vacN>0) w.push([vacN+" 家营业部没主任，去「员工」招人", 1]);
@@ -2309,7 +2320,7 @@ function done(id){ return !!S.done[id]; }
 function markDone(id){ S.done[id] = S.month; }
 function greyOpt(o){ // 灰色选项统一加案底提示；「合规出身」天赋让这类选项的收益打七折
   const fn = o.fn;
-  return {...o, grey:true, s:(o.s?o.s+" · ":"")+"🗂 留案底",
+  return {...o, grey:true, s:(o.s?o.s+" · ":"")+" 留案底",
     fn: fn ? ()=>{ S._grey = true; try{ fn(); } finally { S._grey = false; } } : undefined};
 }
 function fine(amt, why){
@@ -5157,17 +5168,24 @@ function drawIdxChart(){
   g.beginPath(); g.moveTo(2, y(h[0])); g.lineTo(W-2, y(h[0]));
   g.strokeStyle = "rgba(159,176,204,.28)"; g.lineWidth = 1; g.setLineDash([3,3]); g.stroke(); g.setLineDash([]);
 }
+// 指标卡的注释：一次只开一个，再点一下关掉
+function tapTip(el, ev){
+  const on = el.classList.contains("tipOn");
+  document.querySelectorAll(".stat.tipOn").forEach(x=>x.classList.remove("tipOn"));
+  if(!on) el.classList.add("tipOn");
+  if(ev) ev.stopPropagation();
+}
 function renderStats(){
   const cards = [
     {lb:"现金", v:wanTxt(S.cash), d:deltaTxt("cash"), tip:"公司自有资金。客户的钱不在这里，也永远不会进这里。"},
     {lb:"客户资产", v:wanTxt(S.aum), d:deltaTxt("aum"), tip:`托管在渝江的客户资产。累计净流入 ${(S.netInflow>=0?"+":"")}${wanTxt(S.netInflow)}（只有这个算你的本事，浮盈不算）。`},
     {lb:"口碑", v:Math.round(S.trust), d:deltaTxt("trust"), tip:"客户和股吧怎么看你。影响净流入和事件走向。"},
     {lb:"士气", v:Math.round(S.morale), d:deltaTxt("morale"), tip:`员工状态。基准 ${S.moraleBase||"—"}，团建是脉冲，基准才是地板。`},
-    {lb:"风险", v:Math.round(S.risk)+(S.dirt>=3?" 🗂":""), d:deltaTxt("risk",false), tip:"风险到 90，约谈离任。"+(S.dirt>=3?"\n🗂 有些事，最好别让人翻出来。":"")},
+    {lb:"风险", v:Math.round(S.risk)+(S.dirt>=3?" ":""), d:deltaTxt("risk",false), tip:"风险到 90，约谈离任。"+(S.dirt>=3?"\n 有些事，最好别让人翻出来。":"")},
     {lb:"行业排名", v:"第"+S.rank, d:"", tip:`全国 140 家，每季度更新。分类评级 ${S.grade}。`},
   ];
   $("#statBar").innerHTML = cards.map(c=>
-    `<div class="stat" onclick="this.classList.toggle('tipOn');event.stopPropagation()">
+    `<div class="stat" onclick="tapTip(this,event)">
       <div class="lb">${c.lb}</div><div class="v">${c.v}</div><div class="delta">${c.d||""}</div>
       <div class="tip">${esc(c.tip)}</div></div>`).join("");
 }
@@ -5185,19 +5203,38 @@ function renderForecast(){
   $("#forecast").innerHTML =
     `本月预估：经纪 <b>${broker}万</b>（换手${to.toFixed(1)}倍 · ${feeName()}）　代销 <b>${fund}万</b>${mi?`　两融息 <b>${mi}万</b>`:""}　成本 <b>${Math.round(cost)}万</b>　→ 不含自营 <b class="${net>=0?"pos":"neg"}">${net>=0?"+":""}${net}万</b>`;
 }
+/* 行动卡图标：线性 SVG，描边取 currentColor，跟着皮肤走。不用 emoji。 */
+const ICONS = {
+  // 营业部：带雨棚的门面
+  biz:'<path d="M3.5 9.5 5 5h14l1.5 4.5"/><path d="M5 9.5V20h14V9.5"/><path d="M9.5 20v-6h5v6"/>',
+  // 走关系：两个人的圈子叠在一起
+  social:'<circle cx="9.2" cy="12" r="5.2"/><circle cx="14.8" cy="12" r="5.2"/>',
+  // 抓内部：记事板
+  internal:'<rect x="5" y="5" width="14" height="15" rx="1.6"/><path d="M9 5V3.6h6V5"/><path d="M8.5 10.5h7M8.5 14h7M8.5 17h4"/>',
+  // 投行：卷了角的文件
+  ib:'<path d="M6.5 3.5h7l5 5v12h-12z"/><path d="M13.5 3.5v5h5"/><path d="M9 13h6M9 16.5h6"/>',
+  // 自营：两根 K 线
+  prop:'<rect x="4.2" y="9" width="4" height="7.5" rx=".6"/><path d="M6.2 5.5V9M6.2 16.5V20"/><rect x="14" y="6.5" width="4" height="6" rx=".6"/><path d="M16 4v2.5M16 12.5V18"/>',
+  // 扩张：楼 + 加号
+  expand:'<path d="M3.5 20.5V9.5l6.5-4.2v15.2"/><path d="M10 20.5V12.5h5.5v8"/><path d="M18.5 4v5.4M15.8 6.7h5.4"/>',
+};
+function svgIcon(k){
+  const d = ICONS[k]; if(!d) return "";
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+}
 function renderActions(){
   const free = fav("luo")>=60;
   const acts = [
-    {ic:"🏪", nm:"跑业务", ds:"1 精力", fn:"actBiz"},
-    {ic:"🍶", nm:"走关系", ds:"1 精力", fn:"actSocial"},
-    {ic:"📋", nm:"抓内部", ds:"1 精力", fn:"actInternal"},
-    {ic:"📄", nm:"投行项目", ds:S.suspend>0?`暂停 ${S.suspend}月`:"1 精力", fn:"actIB"},
-    {ic:"📈", nm:"自营调仓", ds:free?"免精力":"1 精力", fn:"actProp"},
-    {ic:"🏗", nm:"扩张", ds:"1 精力", fn:"actExpand"},
+    {ic:"biz",      nm:"跑业务", ds:"1 精力", fn:"actBiz"},
+    {ic:"social",   nm:"走关系", ds:"1 精力", fn:"actSocial"},
+    {ic:"internal", nm:"抓内部", ds:"1 精力", fn:"actInternal"},
+    {ic:"ib",       nm:"投行项目", ds:S.suspend>0?`暂停 ${S.suspend}月`:"1 精力", fn:"actIB"},
+    {ic:"prop",     nm:"自营调仓", ds:free?"免精力":"1 精力", fn:"actProp"},
+    {ic:"expand",   nm:"扩张", ds:"1 精力", fn:"actExpand"},
   ];
   $("#actionBar").innerHTML = acts.map(a=>
     `<div class="act ${a.off||(S.energy<=0&&a.fn!=='actProp')?"off":""}" ${a.fn?`onclick="${a.fn}()"`:""}>
-      <div class="ic">${a.ic}</div><div class="nm">${a.nm}</div><div class="ds">${a.ds}</div></div>`).join("");
+      <div class="ic">${svgIcon(a.ic)}</div><div class="nm">${a.nm}</div><div class="ds">${a.ds}</div></div>`).join("");
   $("#energyDots").textContent = "●".repeat(S.energy)+"○".repeat(Math.max(0,3-S.energy));
 }
 function switchTab(t){
@@ -5247,14 +5284,14 @@ function panelTeam(){
     <div class="row"><div><h3>人手</h3> <span class="num">在册 <b>${S.emps.length}</b> 人 · 空闲 <b>${free}</b> 人 · 主任空缺 <b class="${vac?"neg":""}">${vac}</b> 家</span></div>
       <span class="num">骨干月薪合计 <b>${totalSalary()}万</b></span></div>
     ${vac?`<div class="sub" style="color:var(--bad)">有 ${vac} 家营业部没有主任，产出减半。</div>`:""}
-    <div class="cardbtns"><button class="main" onclick="actHire()">👔 招聘（1 精力）</button></div></div>`;
+    <div class="cardbtns"><button class="main" onclick="actHire()">招聘（1 精力）</button></div></div>`;
   const used = S.outlets.filter(o=>o.mgr!=null).map(o=>o.mgr);
   for(const e of S.emps){
     const post = S.outlets.find(o=>o.mgr===e.id);
     h += `<div class="card">
       <div class="row"><div><h3>${esc(e.name)}</h3>
         <span class="tag mk">营 ${e.mk}</span><span class="tag mg">管 ${e.mg}</span><span class="tag rk">风 ${e.rk}</span>
-        ${e.trait?`<span class="tag gy">${TRAITS[e.trait].ic} ${TRAITS[e.trait].nm}</span>`:""}${fatigueTag(e)}</div>
+        ${e.trait?`<span class="tag gy">${TRAITS[e.trait].nm}</span>`:""}${fatigueTag(e)}</div>
         <span class="num">月薪 <b>${e.salary}万</b></span></div>
       <div class="sub">${esc(e.flavor)}${post?`　·　现任 ${esc(post.name)} 主任`:""}</div>
       ${e.trait?`<div class="sub" style="color:var(--dim2)">${TRAITS[e.trait].desc}</div>`:""}
@@ -5321,7 +5358,7 @@ function panelIB(){
     h += `<div class="card">
       <div class="row"><div><h3>${esc(p.name)}</h3> <span class="tag gy">${p.type}</span>
         ${p.dd?`<span class="tag rk">尽调 ${p.dd} 次</span>`:`<span class="tag mk">没尽调</span>`}
-        ${p.hid?`<span class="tag" style="background:#4a2020;color:#e08080">🗂 瞒下来了</span>`:""}</div>
+        ${p.hid?`<span class="tag" style="background:#4a2020;color:#e08080"> 瞒下来了</span>`:""}</div>
         <span class="num">已收 <b>${p.got}万</b> / ${p.fee}万</span></div>
       <div class="sub">${esc(p.flavor)}</div>
       <div class="meter"><span class="mlb">${esc(st[p.stage])}</span><span class="bar"><i style="width:${pct}%"></i></span><span class="mvl">${pct}%</span></div>
@@ -5784,7 +5821,7 @@ function actPoach(){
 
 /* ============ P2：挑战模式 ============ */
 const CHALLENGES = [
-  {id:"bear", ic:"🐻", nm:"熊市开局", desc:"股灾在前，牛市在后。头一年就得先活下来。",
+  {id:"bear", nm:"熊市开局", desc:"股灾在前，牛市在后。头一年就得先活下来。",
    apply:s=>{
      // 把周期倒过来：股灾 → 修复 → 冷清 → 回暖 → 疯牛
      const order = [["crash",1,5],["recover",6,14],["cold",15,20],["warm",21,26],["mania",27,36]];
@@ -5797,7 +5834,7 @@ const CHALLENGES = [
      s.cash = 70000; s.mood = 55;
      s.npcs.find(x=>x.id==="xu").fav += 15; s.flags.bearStart = 1;   // 他知道这副牌不好打
    }},
-  {id:"storm", ic:"⚖️", nm:"廉政风暴", desc:"每年查两次，案底的分量翻倍。一点捷径都走不了。",
+  {id:"storm", nm:"廉政风暴", desc:"每年查两次，案底的分量翻倍。一点捷径都走不了。",
    apply:s=>{ s.flags.storm = 1; s.npcs.find(x=>x.id==="shen").fav += 10; }},
   {id:"speed", ic:"⏱", nm:"24 月速通", desc:"任期只有两年。周期压缩，评级只考两次。",
    apply:s=>{
@@ -5819,8 +5856,8 @@ function startChallenge(id, seed){
 }
 function showChallengePicker(){
   loadMeta();
-  const opts = CHALLENGES.map(c=>({t:`${c.ic} ${c.nm}`, s:c.desc, fn:()=>askSeed(c.id)}));
-  opts.push({t:"🎲 标准三年 + 指定种子", s:"同一个种子必然复现同一轮牛熊", fn:()=>askSeed(null)});
+  const opts = CHALLENGES.map(c=>({t:c.nm, s:c.desc, fn:()=>askSeed(c.id)}));
+  opts.push({t:"标准三年 + 指定种子", s:"同一个种子必然复现同一轮牛熊", fn:()=>askSeed(null)});
   opts.push({t:"← 返回"});
   showModal("换个打法", "挑战模式和种子都不影响图鉴解锁，放心试。", opts);
 }
@@ -6090,17 +6127,17 @@ function showEndScreen(title, text, sc){
     <div class="r"><span>分类评级</span><b>${gradeTxt}</b></div>
     <div class="r"><span>投行</span><b>${S.track.ibDone?`做完 ${S.track.ibDone} 单${S.track.ipoClean?`（IPO 干净过会 ${S.track.ipoClean}）`:""}`:"一单没做"}${S.track.ibBlown?" · 暴雷 "+S.track.ibBlown:""}</b></div>
     <div class="r"><span>研究所</span><b>${S.lab?starTxt(S.labStar):"没建"}</b></div>
-    <div class="r"><span>案底</span><b>${S.dirt===0?"干净":"🗂 "+S.dirt+" 桩"}</b></div>
+    <div class="r"><span>案底</span><b>${S.dirt===0?"干净":" "+S.dirt+" 桩"}</b></div>
     <div class="r" style="margin-top:6px;border-top:1px solid var(--line2);padding-top:6px"><span>总分</span><b>${sc.total} / 100</b></div>
     <div class="r"><span>种子</span><b>${esc(S.seed||"—")}</b></div>
     ${S.expGained?`<div class="r"><span>本局阅历点</span><b>+${S.expGained}</b></div>`:""}
   </div>`;
   h += `<div id="bioWrap"></div>`;
   h += `<div class="btns">
-    <button class="main" onclick="makeBio()">🖼 生成传记长图</button>
-    <button onclick="showGallery()">📖 图鉴</button>
-    <button onclick="showChallengePicker()">🎲 换个打法 / 指定种子</button>
-    <button onclick="restartGame()">🔄 再来一局</button>
+    <button class="main" onclick="makeBio()">生成传记长图</button>
+    <button onclick="showGallery()">图鉴</button>
+    <button onclick="showChallengePicker()">换个打法 / 指定种子</button>
+    <button onclick="restartGame()">再来一局</button>
   </div>`;
   $("#endCard").innerHTML = h;
   $("#endScreen").classList.add("show");
@@ -6350,7 +6387,7 @@ function showGallery(tab){
   } else if(tab==="talent"){
     h += TALENTS.map(t=>{
       const got = (META.talents||{})[t.id];
-      return `<div class="card" style="${got?"":"opacity:.62"}"><div class="row"><h3>${got?"✅ ":"🔒 "}${esc(t.nm)}</h3>
+      return `<div class="card" style="${got?"":"opacity:.62"}"><div class="row"><h3>${esc(t.nm)}</h3>
         <span class="num">${got?"已解锁":`${t.cost} 点`}</span></div>
         <div class="sub">${esc(t.ds)}</div>
         ${got?"":`<div class="cardbtns"><button onclick="unlockTalent('${t.id}')" ${(META.exp||0)<t.cost?"disabled":""}>解锁</button></div>`}</div>`;
@@ -6359,7 +6396,8 @@ function showGallery(tab){
   } else {
     h += ACHIEVEMENTS.map(a=>{
       const got = (META.ach||{})[a.id];
-      return `<div class="card" style="${got?"":"opacity:.42"}"><div class="row"><h3>${got?"🏅 ":"🔒 "}${esc(a.nm)}</h3></div>
+      return `<div class="card" style="${got?"":"opacity:.42"}"><div class="row"><h3>${esc(a.nm)}</h3>
+        <span class="num">${got?"已达成":"未达成"}</span></div>
         <div class="sub">${esc(a.ds)}</div></div>`;
     }).join("");
   }
@@ -6613,7 +6651,7 @@ if(typeof document!=="undefined"){
 
   loadMeta();
   applyTheme();
-  window.showSkin = showSkin; window.setSkin = setSkin;
+  window.showSkin = showSkin; window.setSkin = setSkin; window.tapTip = tapTip;
   if(META.runs>0){ const g=$("#guideGallery"); if(g) g.style.display="block";
     const c=$("#guideChal"); if(c) c.style.display="block"; }
   window.guideChallenge = guideChallenge;
