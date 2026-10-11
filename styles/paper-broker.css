@@ -1,10 +1,10 @@
 /* 纸墨经营 · 渝江证券。靛蓝、冷白、浅琥珀。 */
-.pm-ui{--paper:#eef1f7;--ink:#25365e;--ink2:#46619b;--bg:var(--paper);--bg2:#e2e8f2;--bg3:#d4ddec;--hdrbg:var(--ink);--panel:#f9fbff;--panel2:#f1f5fc;--card:#ffffff;--card-hi:#e7edf9;--card2:#e8edf5;--sunken:#d7dfec;--line:#c5cede;--line2:#d8e0ed;--txt:#25334e;--txt2:#384969;--dim:#596982;--dim2:#63728a;--gold:#80603a;--ongold:#fffaf0;--up:#a54435;--down:#357456;--good:#35664d;--bad:#a14435;--blue:#3e5a98;--serif:'Songti SC','STSong','SimSun',serif;color-scheme:light;background:var(--paper);color:var(--txt);font-size:14px;line-height:1.7;font-variant-numeric:tabular-nums}
+.pm-ui{--safe-top:env(safe-area-inset-top,0px);--safe-right:env(safe-area-inset-right,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--safe-left:env(safe-area-inset-left,0px);--paper:#eef1f7;--ink:#25365e;--ink2:#46619b;--bg:var(--paper);--bg2:#e2e8f2;--bg3:#d4ddec;--hdrbg:var(--ink);--panel:#f9fbff;--panel2:#f1f5fc;--card:#ffffff;--card-hi:#e7edf9;--card2:#e8edf5;--sunken:#d7dfec;--line:#c5cede;--line2:#d8e0ed;--txt:#25334e;--txt2:#384969;--dim:#596982;--dim2:#63728a;--gold:#80603a;--ongold:#fffaf0;--up:#a54435;--down:#357456;--good:#35664d;--bad:#a14435;--blue:#3e5a98;--serif:'Songti SC','STSong','SimSun',serif;color-scheme:light;background:var(--paper);color:var(--txt);font-size:14px;line-height:1.7;font-variant-numeric:tabular-nums}
 .pm-ui[data-paper='sand']{--paper:#f2eef7;--ink:#40345e;--ink2:#66548c;--bg2:#e8e1f0;--line:#d0c6df;--gold:#775634;--blue:#66548c}
 .pm-ui[data-theme='dark']{--paper:#171e31;--ink:#101729;--ink2:#a8bce7;--bg2:#222d45;--bg3:#121a2d;--panel:#222d45;--panel2:#27334e;--card:#222d45;--card-hi:#303f61;--card2:#1d273d;--sunken:#303e5a;--line:#475775;--line2:#364763;--txt:#e7edf9;--txt2:#d7e0f5;--dim:#bac6de;--dim2:#acbbd7;--gold:#d1b384;--ongold:#17233c;--up:#ee9786;--down:#8bc6a1;--good:#9acbae;--bad:#eea092;--blue:#adc2f0;color-scheme:dark}
 .pm-ui,.pm-ui *{touch-action:pan-x pan-y pinch-zoom}
 .pm-ui:before{display:none}
-.pm-ui #app{max-width:1260px;padding:24px 28px 60px}
+.pm-ui{min-height:100vh;min-height:100dvh}.pm-ui #app{max-width:1260px;padding:calc(24px + var(--safe-top)) calc(28px + var(--safe-right)) calc(60px + var(--safe-bottom)) calc(28px + var(--safe-left))}
 .pm-ui h1,.pm-ui h2,.pm-ui h3{font-family:var(--serif)}
 .pm-ui .hdr{background:var(--ink);background-image:none;border:0;border-radius:6px;padding:24px 28px;box-shadow:0 2px 8px #26312d0c;color:#f7f2e6;--gold:#d6b889;--txt:#f7f2e6;--dim:#c5d0e8;--up:#f2a28d;--down:#9dceac;--line:#637496;--line2:#506187;--good:#a7d3b4}
 .pm-ui .hdr h1{font-size:30px;letter-spacing:3px;color:#f7f2e6}
@@ -63,14 +63,14 @@
 .pm-ui .modal .body{font-size:15px;line-height:1.9}
 .pm-ui .modal .opts button{padding:12px 14px}
 .pm-ui .modal .opts button small,.pm-ui .modal .opts button:disabled small{color:var(--dim);font-size:13px;line-height:1.75}
-.pm-ui .mask{background:#111c36a6}
+.pm-ui .mask{background:#111c36a6;padding:calc(12px + var(--safe-top)) calc(12px + var(--safe-right)) calc(12px + var(--safe-bottom)) calc(12px + var(--safe-left))}.pm-ui .modal{max-height:calc(100vh - var(--safe-top) - var(--safe-bottom) - 24px);max-height:min(88dvh,calc(100dvh - var(--safe-top) - var(--safe-bottom) - 24px))}
 .pm-ui #mScene{max-height:150px;object-fit:cover}
 .pm-ui .rpt{font-size:13px;table-layout:fixed}
 .pm-ui .rpt td{overflow-wrap:anywhere;padding:7px 3px}
 .pm-ui .rpt td:last-child{white-space:normal}
 .pm-ui .cert .g{color:var(--gold);text-shadow:none}
 .pm-ui #guide{background:var(--paper)}
-.pm-ui #guide .inner{background:none;min-height:100%;align-items:center;justify-content:center;padding:40px 24px}
+.pm-ui #guide .inner{background:none;min-height:100%;align-items:center;justify-content:center;padding:calc(40px + var(--safe-top)) calc(24px + var(--safe-right)) calc(40px + var(--safe-bottom)) calc(24px + var(--safe-left))}
 .pm-ui #guide .copy{max-width:640px;text-shadow:none;padding:32px 40px;border:1px solid var(--line);border-top:5px solid var(--ink);background:var(--card);border-radius:4px}
 .pm-ui #guide h2{font-size:40px;line-height:1.4;color:var(--ink2);letter-spacing:2px}
 .pm-ui #guide h2 em{font-size:21px;font-style:normal;font-weight:400;letter-spacing:0;color:var(--txt)}
@@ -93,20 +93,20 @@
 .pm-ui .plan-options small{font-size:12px;color:var(--dim)}
 .pm-ui .build-status{margin:14px 0;padding:12px;background:var(--bg2);font-size:13px}
 .pm-ui .endcard{background:var(--card);border-color:var(--line);color:var(--txt)}
-@media(max-width:1000px) and (min-width:761px){.pm-ui #app{padding:18px}.pm-ui .pm-layout{grid-template-columns:225px minmax(0,1fr);gap:16px}.pm-ui .actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:1000px) and (min-width:761px){.pm-ui #app{padding:calc(18px + var(--safe-top)) calc(18px + var(--safe-right)) calc(60px + var(--safe-bottom)) calc(18px + var(--safe-left))}.pm-ui .pm-layout{grid-template-columns:225px minmax(0,1fr);gap:16px}.pm-ui .actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){
- .pm-ui #app{padding:12px 12px calc(90px + env(safe-area-inset-bottom))}.pm-ui .pm-layout{display:block}.pm-ui .pm-overview{margin-bottom:24px}
+ .pm-ui #app{padding:calc(12px + var(--safe-top)) calc(12px + var(--safe-right)) calc(73px + var(--safe-bottom)) calc(12px + var(--safe-left))}.pm-ui .pm-layout{display:block}.pm-ui .pm-overview{margin-bottom:24px}
  .pm-ui .hdr{padding:18px 16px}.pm-ui .hdr h1{font-size:25px}.pm-ui .hdr .top{flex-wrap:wrap}.pm-ui .hdr .date{font-size:12px}.pm-ui .hdr h1 small{font-size:12px;letter-spacing:0}
  .pm-ui .toolbar:before{display:none}.pm-ui .toolbar{margin:10px 0 20px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.pm-ui .toolbar button{padding:8px 3px;white-space:normal;font-size:12px}
  .pm-ui .stats{grid-template-columns:repeat(3,minmax(0,1fr))}.pm-ui .stat .v{font-size:23px}
  .pm-ui .energy button{flex:0 0 auto}.pm-ui .energy .hint{display:block}.pm-ui .forecast{font-size:12px}
  .pm-ui .actions{grid-template-columns:repeat(2,minmax(0,1fr))}.pm-ui .act{padding:12px 8px;grid-template-columns:25px minmax(0,1fr);column-gap:7px}
- .pm-ui .tabs{position:fixed;bottom:0;left:0;right:0;z-index:40;margin:0;padding:4px 4px calc(4px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--card);box-shadow:0 -2px 10px #1725220a;gap:0}
+ .pm-ui .tabs{position:fixed;bottom:0;left:0;right:0;z-index:40;margin:0;padding:4px calc(4px + var(--safe-right)) calc(4px + var(--safe-bottom)) calc(4px + var(--safe-left));border-top:1px solid var(--line);background:var(--paper);box-shadow:0 -2px 10px #1725220a;gap:0}
  .pm-ui .tabs button{font-size:12px;white-space:normal;padding:10px 2px;min-height:52px;min-width:0;border-top:3px solid transparent;border-bottom:0}.pm-ui .tabs button.on{border-top-color:var(--gold)}
  .pm-ui .card{padding:14px}.pm-ui .cardbtns button{flex:1 1 auto}.pm-ui .rpt td{font-size:12px}.pm-ui .modal{padding:18px}.pm-ui .modal h2{font-size:21px}
- .pm-ui #guide .inner{padding:20px 12px}.pm-ui #guide .copy{padding:24px 20px}.pm-ui #guide h2{font-size:32px}.pm-ui #guide h2 em{font-size:18px}
+ .pm-ui #guide .inner{padding:calc(20px + var(--safe-top)) calc(12px + var(--safe-right)) calc(20px + var(--safe-bottom)) calc(12px + var(--safe-left))}.pm-ui #guide .copy{padding:24px 20px}.pm-ui #guide h2{font-size:32px}.pm-ui #guide h2 em{font-size:18px}
  .pm-ui .bbs .b{display:block}.pm-ui .bbs .u{display:block}
- .pm-ui .stat .tip{position:fixed;top:auto;bottom:90px;left:14px!important;right:14px!important;transform:none!important;width:auto;max-width:none}
+ .pm-ui .stat .tip{position:fixed;top:auto;bottom:calc(73px + var(--safe-bottom));left:calc(14px + var(--safe-left))!important;right:calc(14px + var(--safe-right))!important;transform:none!important;width:auto;max-width:none}
 }
 @media(prefers-reduced-motion:reduce){.pm-ui *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
