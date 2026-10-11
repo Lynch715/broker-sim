@@ -1,0 +1,10 @@
+{
+  "name": "broker-paper-qa",
+  "private": true,
+  "scripts": {
+    "test": "node regression.cjs && node ui.cjs && node audit.cjs"
+  },
+  "devDependencies": {
+    "jsdom": "^26.0.0"
+  }
+}

@@ -1,14 +1,14 @@
 {
-  "name": "渝江证券 · 总经理的三年",
+  "name": "渝江证券 · 经营手记",
   "short_name": "渝江证券",
-  "description": "全国第九十六名的重庆小券商，三年任期，一轮牛熊。",
+  "description": "从重庆小券商起步，经历多轮牛熊，经营自己的十年。",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "lang": "zh-CN",
-  "background_color": "#14213d",
-  "theme_color": "#14213d",
+  "background_color": "#eef1f7",
+  "theme_color": "#25365e",
   "icons": [
     {
       "src": "icon-192.png",

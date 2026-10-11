@@ -1,0 +1,28 @@
+const fs=require('fs'),assert=require('assert');const {JSDOM,VirtualConsole}=require('jsdom');
+const errors=[],v=new VirtualConsole();v.on('jsdomError',e=>{if(!e.message.includes('navigation'))errors.push(e.message)});
+const dom=new JSDOM(fs.readFileSync(__dirname+'/../../index.html','utf8'),{url:'http://localhost:8788',runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:v,beforeParse(w){w.matchMedia=()=>({matches:false,addEventListener(){}});w.HTMLElement.prototype.scrollIntoView=()=>{};w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({measureText:s=>({width:s.length*8}),createLinearGradient:()=>({addColorStop(){}})},{get:(t,k)=>k in t?t[k]:()=>{},set:(t,k,v)=>(t[k]=v,true)});}});
+const w=dom.window,d=w.document;function click(sel){const x=d.querySelector(sel);assert(x,sel);x.click();}let count=0;function t(n,f){f();count++;console.log('PASS',n)}
+
+const G=w.BrokerGame;
+function fresh(){G.setHeadless(true);G.newGame('审计2026',null,'broker',120);G.setHeadless(false);w.renderAll();d.querySelector('#guide').classList.remove('show');d.querySelector('#mask').classList.remove('show');return G.getState();}
+function choose(text){const b=[...d.querySelectorAll('#mOpts button')].find(x=>x.textContent.startsWith(text)&&!x.disabled);assert(b,text);b.click();}
+function receipt(){assert.equal(d.querySelector('#mTitle').textContent,'决策结果');return d.querySelector('#mBody').textContent;}
+function close(){choose('查看后续');}
+setTimeout(()=>{try{
+ t('导航不弹结果、直接筹建弹真实差额',()=>{fresh();click('[data-tab="business"]');assert(!d.querySelector('#mask').classList.contains('show'));click('[onclick="buildBusiness(\'advisory\')"]');const text=receipt();assert(text.includes('-1800万'));assert(text.includes('本月精力'));assert(text.includes('4个月'));choose('收到账册');});
+ t('菜单内经营决策只执行一次',()=>{const s=fresh(),cash=s.cash;w.actInternal();choose('团建');assert(receipt().includes('-60万'));assert.equal(s.cash,cash-60);const energy=s.energy;close();assert.equal(s.energy,energy);});
+ t('人事任命结果即时可见',()=>{fresh();w.pickMgr(2);choose('唐蕾');assert(receipt().includes('空缺 → 唐蕾'));});
+ t('佣金调整显示已执行档位',()=>{fresh();click('[onclick="setFee(1)"]');assert(receipt().includes('佣金'));});
+ t('年度重点、经营安排有独立回执',()=>{const s=fresh();w.switchTab('business');click('[onclick="selectYearPlan(\'clients\')"]');assert(receipt().includes('年度重点'));choose('收到账册');G.businessState().levels.advisory=1;w.chooseOperatingMode('advisory');choose('拓展客户');assert(receipt().includes('拓展客户'));});
+ t('随机事件结果先弹，再继续队列',()=>{const s=fresh(),cash=s.cash;G.fireEvent({id:'audit',title:'测试事件',text:'审计',opts:()=>[{t:'落实',fn:()=>{G.gain('cash',-123);G.log('','已办妥');}}]});choose('落实');assert(receipt().includes('-123万'));assert.equal(s.cash,cash-123);});
+ t('会喝酒减免与界面报价一致',()=>{const s=fresh();s.flags.drinker=1;const old=s.cash;w.actSocial();const label=d.querySelector('#mOpts button').textContent,fee=Number(label.match(/花费 (\d+)万/)[1]);choose(s.npcs[0].name);assert.equal(old-s.cash,fee);assert.equal(fee,Math.round(w.eval('SOCIAL_COST[S.npcs[0].like]')*.6));});
+ t('IPO按五阶段展示收费，无NaN',()=>{fresh();w.eval('S.ibPool=[{...IB_POOL.find(p=>p.type==="IPO"),dd:0}]');w.ibTake(0);const text=d.querySelector('#mBody').textContent;assert(text.includes('分5段收'));assert(!text.includes('NaN'));assert(text.includes('45%'));});
+ t('到账手续费计利润且月末不重复入账',()=>{const s=fresh();w.earnFee(500,'审计手续费');assert.equal(s.profitCum,500);const baseline=JSON.parse(JSON.stringify(s));const r=G.settleCore();const c=s.cash,p=s.profitCum;G.setState(baseline);baseline.actionIncome=0;baseline.actionIncomeLines=[];baseline.profitCum=0;w.setSeed('same');const r2=G.settleCore();assert.equal(p,500+r.pnl-500);assert.equal(r.income-r2.income,500);assert.equal(r.pnl-r2.pnl,500);assert.equal(c,baseline.cash);});
+ t('客户流出不超过真实余额',()=>{const s=fresh();s.aum=50;s.netInflow=0;G.inflow(-200);assert.equal(s.aum,0);assert.equal(s.netInflow,-50);});
+ t('保存读档继续原随机序列',()=>{fresh();w.eval('RNG();RNG()');w.save();const expected=w.eval('RNG()');assert(w.load());assert.equal(w.eval('RNG()'),expected);});
+ t('月末中途保留结算前存档，完成后推进',()=>{const s=fresh();const month=s.month;s.energy=0;w.save();click('#btnEnd');assert(d.querySelector('#mTitle').textContent.includes('月报'));w.save();assert.equal(JSON.parse(w.localStorage.getItem('yjzq_save')).month,month);let n=0;while(G.getState().month===month&&!G.getState().over&&n++<80){const b=d.querySelector('#mOpts button:not(:disabled)');assert(b);b.click();}assert.equal(G.getState().month,month+1);assert.equal(JSON.parse(w.localStorage.getItem('yjzq_save')).month,month+1);});
+ t('同月多笔到期债券逐笔处理',()=>{const s=fresh();s.bonds=[{id:'a',nm:'甲债',amt:10000,rate:.03,due:1,crisis:true},{id:'b',nm:'乙债',amt:10000,rate:.03,due:1,crisis:true}];s.bondCrisis='a';s.grade='AA';w.fireBondCrisis();choose('续发');receipt();close();assert(d.querySelector('#mBody').textContent.includes('乙债'));choose('续发');receipt();assert(s.bonds.every(b=>!b.crisis));assert(!s.bondCrisis);});
+ t('零精力和暂停资格无法绕过投行入口',()=>{const s=fresh();w.eval('S.ibPool=[{...IB_POOL[0],dd:0}]');s.energy=0;const cash=s.cash;w.ibTake(0);assert.equal(d.querySelector('#mTitle').textContent,'没精力了');assert.equal(s.cash,cash);s.energy=3;s.suspend=2;w.ibTake(0);assert.equal(d.querySelector('#mTitle').textContent,'保荐资格暂停中');assert.equal(s.ibPool.length,1);});
+ t('无脚本异常' ,()=>assert.deepEqual(errors,[]));
+ console.log(count+' audit checks passed');dom.window.close();
+}catch(e){console.error(e);dom.window.close();process.exitCode=1;}},50);
