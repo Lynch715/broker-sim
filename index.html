@@ -2916,6 +2916,7 @@ function endMonth(){
   save(); resolvingMonth=true;
   if(DECISION_TX)DECISION_TX.monthly=true;
   const r = settleCore();
+  const settledMonth = S.month;
   const q = [];
   q.push(()=>showReport(r));
   // 周期预兆
@@ -2942,20 +2943,33 @@ function endMonth(){
   }
   // 事件优先级：三部曲 > 站队 > 黑天鹅 > 对手剧本 > 七人主线 > 普通事件
   const beat = pickScript() || pickFaction() || pickSwanBeat() || pickRivalBeat() || pickArcBeat() || pickEvent();
+  // 普通事件在新月处理，使用新月的精力；旧月债务、评级和强平先办完。
+  q.push(()=>{
+    if(S.month<endM()) beginNextMonth();
+    flushMQ();
+  });
   if(beat) q.push(()=>fireEvent(beat));
-  q.push(()=>nextMonth());
+  q.push(()=>finishMonthResolution(settledMonth));
   runQueue(q);
 }
 function nextMonth(){
-  resolvingMonth=false;
-  const f = checkFail();
-  if(f){ S.failed = true; return finalEnding(f[0], f[1]); }
-  if(S.month>=endM()) return finalEnding();
+  const settledMonth = S.month;
+  if(S.month<endM() && !checkFail()) beginNextMonth();
+  finishMonthResolution(settledMonth);
+}
+function beginNextMonth(){
   S.month++;
   S.energy = 3;
   S.lastDelta = {};
   if(!S.candidates) S.candidates = genCandidates();
-  if(S.month%12===1 || monOf(S.month)===1) log("month", `第${yearOf(S.month)}年${monOf(S.month)}月。`);
+  if(monOf(S.month)===1) log("month", `第${yearOf(S.month)}年${monOf(S.month)}月。`);
+  if(!HEADLESS) renderAll();
+}
+function finishMonthResolution(settledMonth){
+  resolvingMonth=false;
+  const f = checkFail();
+  if(f){ S.failed = true; return finalEnding(f[0], f[1]); }
+  if(settledMonth>=endM()) return finalEnding();
   if(!HEADLESS){ renderAll(); save(); }
 }
 
