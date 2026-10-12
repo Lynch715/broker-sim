@@ -1133,6 +1133,14 @@ function hasTrait(t){ return S.emps.some(e=>e.trait===t); }
 
 /* ============ 弹窗队列 ============ */
 const MQ = [];
+let MODAL_OPTIONS = [];
+function optionDisabled(o){ return typeof o.disabled === 'function' ? !!o.disabled() : !!o.disabled; }
+function refreshModalOptions(){
+  if(HEADLESS || !$("#mask").classList.contains("show")) return;
+  $("#mOpts").querySelectorAll('button').forEach((b,i)=>{
+    if(MODAL_OPTIONS[i]) b.disabled = optionDisabled(MODAL_OPTIONS[i]);
+  });
+}
 // One click is one transaction. Follow-up dialogs wait until its receipt is read.
 let DECISION_TX=null;
 function decisionSnapshot(){
@@ -1183,7 +1191,7 @@ function showModal(title, body, opts, html, pic){
   opts = opts && opts.length ? opts : [{t:"知道了"}];
   if(HEADLESS){
     // 无头模拟：真人不会随手去留案底，所以灰色选项只按小概率抽
-    let ok = opts.filter(o=>!o.disabled);
+    let ok = opts.filter(o=>!optionDisabled(o));
     const clean = ok.filter(o=>!o.grey);
     if(clean.length && RNG()>0.15) ok = clean;
     const c = ok.length ? ok[ri(ok.length)] : null;
@@ -1202,11 +1210,13 @@ function showModal(title, body, opts, html, pic){
   $("#mBody").classList.toggle("htmlbody", !!html);
   if(html) $("#mBody").innerHTML = body; else $("#mBody").textContent = body;
   const box = $("#mOpts"); box.innerHTML = "";
+  MODAL_OPTIONS = opts;
   opts.forEach(o=>{
     const b = document.createElement("button");
     b.innerHTML = esc(o.t) + (o.s ? `<small>${o.s}</small>` : "");
-    if(o.disabled) b.disabled = true;
+    b.disabled = optionDisabled(o);
     b.onclick = ()=>{
+      if(optionDisabled(o)){ b.disabled = true; return; }
       $("#mask").classList.remove("show");
       if(o.fn) o.fn();
       if(!$("#mask").classList.contains("show")) flushMQ();
@@ -1843,7 +1853,7 @@ function pickMgr(oi){
     fn:()=>assignMgr(oi, e.id)}));
   if(!opts.length){
     opts.push({t:"手上没有空闲的人", disabled:true});
-    opts.push({t:"去招人", s:"花 1 精力，人事处约三个候选人来", disabled:S.energy<=0, fn:()=>actHire()});
+    opts.push({t:"去招人", s:"花 1 精力，人事处约三个候选人来", disabled:()=>(S.energy<=0), fn:()=>actHire()});
   }
   opts.push({t:"← 返回"});
   showModal(`${o.name} · 派主任`,
@@ -2104,11 +2114,11 @@ function ibDetail(i){
   const last = st.length-1;
   const opts = [];
   opts.push({t:`尽调（第 ${p.dd+1} 次）`, s:`花 1 精力 + ${BALANCE.ib.ddCost}万。${p.dd===0?"揭开一半":"把底下的全看清"}`,
-    disabled:S.energy<=0 || S.cash<BALANCE.ib.ddCost || p.dd>=2 || p.stage>=2, fn:()=>ibDD(i)});
+    disabled:()=>(S.energy<=0 || S.cash<BALANCE.ib.ddCost || p.dd>=2 || p.stage>=2), fn:()=>ibDD(i)});
   if(p.stage<last){
     opts.push({t:`→ 推进到「${st[p.stage+1]}」`,
       s: waiting ? `还得等 ${p.waitTo-S.month} 个月` : `花 1 精力，收 ${ibFeeAt(p,p.stage+1)}万`,
-      disabled: waiting || S.energy<=0, fn:()=>ibAdvance(i)});
+      disabled:()=>(waiting || S.energy<=0), fn:()=>ibAdvance(i)});
   }
   const k = ibKnown(p);
   if(k!==null && k>=0.2 && p.stage<last){
@@ -3197,7 +3207,7 @@ const SCRIPTS = {
           log("bad","你让风控把她那一笔压到第二天。<b>第二天又是一个跌停。</b>再平的时候已经穿了，穿掉的部分公司自己填了进去。风控主管在系统里留了操作记录，备注写的是「总经理口头指示」——他不敢不写。风险+6。", true); }
         else { log("good","你让风控把她那一笔压到第二天。<b>第二天大盘反抽了三个点，她自己把保证金追上了。</b>下午她提着两袋梁平柚子来营业部，一个一个发，发到风控部的时候还问了句「哪个是帮我拖了一天的」。没人敢答。", true); }
       }}),
-      {t:"你亲自打", s:"1 精力 · 看造化", disabled:S.energy<=0, fn:()=>{
+      {t:"你亲自打", s:"1 精力 · 看造化", disabled:()=>(S.energy<=0), fn:()=>{
         spend();
         if(RNG()<0.55){ addFav("qin",20); gain("trust",2);
           log("good","你从上午十点开始打，打到第九个的时候通了。她在菜市场，背景里有人在讲价。<b>你把话说完，她只回了一句：「晓得了，下午钱到。」</b>两点零五分保证金到账，账户回到平仓线上方。<span style='color:var(--dim)'>这件事后来在大户室传了很久，版本越传越大。口碑+2。</span>", true); }
@@ -3320,7 +3330,7 @@ const EVENTS = [
 
 他没坐，站在桌子对面等你的话。`,
    opts:()=>[
-     {t:"亲自去大户室坐一下午", s:"1 精力 · 秦孃孃好感+10，口碑+2", disabled:S.energy<=0, fn:()=>{
+     {t:"亲自去大户室坐一下午", s:"1 精力 · 秦孃孃好感+10，口碑+2", disabled:()=>(S.energy<=0), fn:()=>{
        spend(); addFav("qin",10); gain("trust",2); addFav("ran",4);
        log("good","你在大户室坐了一下午，没提佣金，就听她讲二〇〇七年那一波怎么上去、又怎么下来。临走她泡了杯茶给你，说：<b>「小伙子，我在这儿看着三任总经理换了。头一个我见过两次，第二个见过一次，第三个连面都没见着。你是头一个自己下来的。」</b>转户申请她当着你的面撕了。秦孃孃好感+10，口碑+2。", true);
      }},
@@ -3355,7 +3365,7 @@ const EVENTS = [
        inflow(3000,"驻点硬撑"); gain("risk",3);
        log("","桌子又摆了两个星期，开户数确实上去了。<b>第三天银行那边有人把你们的人拍了照发到同业群里，配文「某券商的地推」。</b>照片在群里传了一圈。客户资产+0.3亿，风险+3。");
      }},
-     {t:"让沙坪坝营业部主任去请他喝酒", s:"1 精力 · 客户资产+0.2亿", disabled:S.energy<=0, fn:()=>{
+     {t:"让沙坪坝营业部主任去请他喝酒", s:"1 精力 · 客户资产+0.2亿", disabled:()=>(S.energy<=0), fn:()=>{
        spend(); inflow(2000,"渠道疏通");
        const o = S.outlets.find(x=>x.id==="spb");
        if(o && o.mgr!=null){ const e=empById(o.mgr); if(e) e.fatigue=clamp(e.fatigue+6,0,100); }
@@ -3436,7 +3446,7 @@ const EVENTS = [
      }},
      {t:"让他删", s:"贺予非好感-8", fn:()=>{ addFav("he",-8);
        log("","你让他下架。他问为什么，你说合规没过。他说「那以后每篇都过合规？那新闻都是隔夜的了」。<b>稿子当天删了。</b><span style='color:var(--dim)'>一周后有人发现同样的内容出现在一个匿名公众号上，阅读量比原来还高。贺予非好感-8。</span>"); }},
-     {t:"让沈清禾把三处改了再发", s:"1 精力 · 客户资产+0.2亿", disabled:S.energy<=0, fn:()=>{
+     {t:"让沈清禾把三处改了再发", s:"1 精力 · 客户资产+0.2亿", disabled:()=>(S.energy<=0), fn:()=>{
        spend(); inflow(2000,"研报（合规版）"); addFav("shen",4); addFav("he",-2);
        log("good","三个人在会议室改到晚上九点。改完的版本给结论加了测算过程，删了最后一段。<b>重新发出去转发六千，比原来少了七成。</b>贺予非说「这就没意思了」，但还是发了。客户资产+0.2亿，沈清禾好感+4。");
      }},
@@ -3767,7 +3777,7 @@ ${curRoute().xu}` : ""}`,
 
 沈清禾知道这件事，提醒了一句：这种场合别谈业务，尤其别谈分仓。谈了就是利益输送。`,
    opts:()=>[
-     {t:"去", s:"1 精力 · 现金-120万，贺予非好感+10，分仓收入+", disabled:S.energy<=0, fn:()=>{
+     {t:"去", s:"1 精力 · 现金-120万，贺予非好感+10，分仓收入+", disabled:()=>(S.energy<=0), fn:()=>{
        spend(); gain("cash",-120); addFav("he",10); S.fundHold += 1600;
        log("good","三个饭局，两天跑完，最后一场喝到凌晨一点半。全程没谈分仓，只谈了研究覆盖和路演安排。<b>第二天早上贺予非发来三条消息，都是「收到」。</b>后面两个月，这三家的分仓量都有增加。现金-120万，贺予非好感+10。");
      }},
@@ -4071,7 +4081,7 @@ EVENTS.push(
      S.ranRaise = 60; addFav("ran",15); gain("morale",5);
      log("good","解放碑整条线加薪，对标长江联合的报价，公司每个月多出六十万。方案第二天就批了，没走三个月的审批流程。<b>十二个人一个没走。</b><span style='color:var(--dim)'>冉建国来签字的时候说：「不是为钱。钱他们给得起，你给得起也就这样。但是这个时候你肯给，我得记。」冉建国好感+15，士气+5。</span>", true);
    }},
-   {t:"谈感情", s:"1 精力 · 冉好感≥80 才留得住", disabled:S.energy<=0, fn:()=>{
+   {t:"谈感情", s:"1 精力 · 冉好感≥80 才留得住", disabled:()=>(S.energy<=0), fn:()=>{
      spend();
      if(fav("ran")>=80){ addFav("ran",5); gain("morale",3);
        log("good","你们在解放碑楼下那家面馆坐到十一点半，喝了半斤白酒。前两个钟头他一直在讲九三年，最后半个钟头没说话。<b>临走的时候他说：「算了，我走不脱。」</b><span style='color:var(--dim)'>第二天他跟那十二个人开了个会，会上说了什么没人往外传。十二个人一个没走。</span>", true); }
@@ -4162,7 +4172,7 @@ EVENTS.push(
 
 「但是我得跟您说实话。」`,
  opts:()=>[
-   {t:"补充核查", s:"1 精力 · 现金-20万 · 把底下全看清", disabled:S.energy<=0, fn:()=>{
+   {t:"补充核查", s:"1 精力 · 现金-20万 · 把底下全看清", disabled:()=>(S.energy<=0), fn:()=>{
      spend(); gain("cash",-20);
      const p = S.ibActive.find(x=>x.npc==="tang");
      if(p){ p.dd = 2; p.months += 1; p.waitTo += 1; }
@@ -4618,7 +4628,7 @@ EVENTS.push(
        {t:"不解释，把表签了", s:"客户资产-0.5亿，口碑-6", fn:()=>{
          inflow(-5000,"大户室流失"); gain("trust",-6); addFav("qin",-20); S.qinPromise = null;
          log("bad","你签了字，什么也没说。她道了声谢，转身出去，在门口停了一下，又走了。<b>三千一百万一周内划走。</b><span style='color:var(--dim)'>一个月里大户室走了四个，都是跟她一批的。走之前有人问柜台：「那句话是不是真的？」没人答得上来。口碑-6。</span>", true); }},
-       {t:"现在补，还来不来得及", s:"1 精力 · 看造化", disabled:S.energy<=0, fn:()=>{
+       {t:"现在补，还来不来得及", s:"1 精力 · 看造化", disabled:()=>(S.energy<=0), fn:()=>{
          spend(); S.qinPromise = null;
          if(RNG()<0.35){ addFav("qin",12); gain("trust",2); S.flags.qinStayed = 1;
            log("good","你在大户室陪她坐了一下午，把这一年公司做的事一件一件讲给她听，讲完说对不起。<b>她把表收回包里了。</b><span style='color:var(--dim)'>「我给你这一次。」她说，「下次你再这样，我不来跟你说了，我直接走。」口碑+2。</span>", true); }
@@ -4633,7 +4643,7 @@ EVENTS.push(
    if(f>=30) return [
      {t:"送她出去", s:"客户资产-0.3亿，口碑+2", fn:()=>{ inflow(-3000,"大户转出"); gain("trust",2);
        log("","手续办完，三千一百万划走。你送她到电梯口。<b>她说：「以后路过还来喝茶，你们那个茶不要换。」</b><span style='color:var(--dim)'>后来她真的来过两次，都是下午，坐一个钟头就走。口碑+2。</span>", true); }},
-     {t:"再劝一次", s:"1 精力 · 看造化", disabled:S.energy<=0, fn:()=>{ spend();
+     {t:"再劝一次", s:"1 精力 · 看造化", disabled:()=>(S.energy<=0), fn:()=>{ spend();
        if(RNG()<0.45){ addFav("qin",20); gain("trust",3); S.flags.qinStayed = 1;
          log("good","你在柜台旁边站着跟她说了二十分钟，说的不是收益也不是佣金，说的是大户室那几个人。<b>她听完笑了：「你跟十八年前那个总经理一样烦。」</b>手续没办完，表撕了。秦孃孃好感+20，口碑+3。", true); }
        else { inflow(-3000,"大户转出");
@@ -4709,7 +4719,7 @@ EVENTS.push(
 
 这种事在牛市里不新鲜。可能什么也不是，也可能是别的什么。`,
  opts:()=>[
-   {t:"查一下", s:"1 精力 · 风险-5", disabled:S.energy<=0, fn:()=>{ spend(); gain("risk",-5); S.flags.peiziWatch = 1;
+   {t:"查一下", s:"1 精力 · 风险-5", disabled:()=>(S.energy<=0), fn:()=>{ spend(); gain("risk",-5); S.flags.peiziWatch = 1;
      log("","风控查了一周。三个账户的下单 IP 有七成是同一个，设备指纹也一样。<b>你让风控给这三个账户挂了重点监控标记，另外通知营业部：非客户本人不得在大户室长时间停留。</b><span style='color:var(--dim)'>那个戴帽子的人第二天还是来了，坐了半小时就走了。风险-5。</span>"); }},
    {t:"当没看见", s:"什么都不做", fn:()=>{ log("","你没问。那三个账户正常开户，正常交易。<b>秦孃孃那天给你带了柚子。</b><span style='color:var(--dim)'>这个月大户室的成交量涨了四成。</span>"); }},
  ]},
@@ -4804,7 +4814,7 @@ EVENTS.push(
 
 「您说查到什么程度。」`,
  opts:()=>[
-   {t:"自查", s:"1 精力 · 风险-6", disabled:S.energy<=0, fn:()=>{ spend(); gain("risk",-6); S.flags.bjSelfCheck = 1; addFav("shen",5);
+   {t:"自查", s:"1 精力 · 风险-6", disabled:()=>(S.energy<=0), fn:()=>{ spend(); gain("risk",-6); S.flags.bjSelfCheck = 1; addFav("shen",5);
      log("","查了两周，把那三家的工商档案、实际经营地址和资金流水全部重新走了一遍。<b>确认了两家有关联关系，补了三份说明和一份补充核查报告，主动报送。</b><span style='color:var(--dim)'>沈清禾全程参与，材料是她把的关。风险-6。</span>"); }},
    {t:"等监管问再说", s:"什么也不做", fn:()=>{ gain("dirt",1); log("bad","你说匿名信这个东西不能当真，等监管正式来问再说。<b>这件事压在抽屉里了。</b><span style='color:var(--dim)'>周砚没再提。信他自己收着。</span>"); }},
  ]},
@@ -4989,7 +4999,7 @@ EVENTS.push(
 
 然后他就不说话了。`,
  opts:()=>[
-   {t:"内部先查清楚", s:"1 精力 · 风险-6", disabled:S.energy<=0, fn:()=>{ spend(); gain("risk",-6); S.flags.lsCheck = 1; addFav("shen",6);
+   {t:"内部先查清楚", s:"1 精力 · 风险-6", disabled:()=>(S.energy<=0), fn:()=>{ spend(); gain("risk",-6); S.flags.lsCheck = 1; addFav("shen",6);
      log("","查了十天，把那五个人的通讯记录、报销记录和社会关系都过了一遍。<b>其中一个账户的开户人，是罗劲的大学同学。两个人上个月一起吃过一次饭，饭店在南滨路，罗劲刷的卡。</b><span style='color:var(--dim)'>这条线索是罗劲自己交出来的。风险-6。</span>"); }},
    greyOpt({t:"回函说是巧合", s:"先拖着", fn:()=>{ gain("dirt",2);
      log("bad","回函八百字，核心意思是公司已建立完善的内幕信息管理制度，相关交易系市场行为，与公司无关。<b>三天写完，盖章发出。</b><span style='color:var(--dim)'>回函是罗劲起草的。</span>"); }}),
@@ -5079,7 +5089,7 @@ EVENTS.push(
 
 这话不像他平时说的。`,
  opts:()=>[
-   {t:"约他们谈", s:"1 精力 · 留住一个", disabled:S.energy<=0, fn:()=>{ spend(); gain("morale",3); S.flags.czTalk = 1;
+   {t:"约他们谈", s:"1 精力 · 留住一个", disabled:()=>(S.energy<=0), fn:()=>{ spend(); gain("morale",3); S.flags.czTalk = 1;
      log("","三个人你一个一个谈的，一个下午谈完。<b>留住一个，另外两个说「已经签了，违约金都付了」。</b><span style='color:var(--dim)'>留下来的那个后来做得很好。他说他留下来不是因为你说了什么，是因为你亲自谈了。士气+3。</span>"); }},
    {t:"批", s:"士气-5", fn:()=>{ gain("morale",-5);
      log("","当天就批了，走的时候没有人送。<b>三个人的客户交接用了两周，交接清单上有四百多个名字。</b><span style='color:var(--dim)'>其中大概一半在三个月内转走了。士气-5。</span>"); }},
@@ -5354,7 +5364,7 @@ EVENTS.push(
      log("good","派了两个人，跑了三趟：一趟去公证处问清楚材料，一趟去大爷家里取证件，一趟陪他去公证处办手续。<b>前后花了十二天，公司这边的成本是八万块的人力和差旅。</b><span style='color:var(--dim)'>过户办完那天，大爷送了一面锦旗来，字是自己写的，歪歪扭扭，写的是「为民服务」。现在挂在营业部大厅。口碑+5。</span>"); }},
    {t:"按规定来", s:"口碑-4", fn:()=>{ gain("trust",-4); gain("risk",-2);
      log("","规定就是规定，继承过户涉及产权，出了问题公司担不起。柜台按流程给他开了一份材料清单，让他准备齐了再来。<b>他在大厅坐了一上午，中午自己走的。</b><span style='color:var(--dim)'>十月份他儿子来了，手续办完了。那二十万在账户里放了一年多。口碑-4。</span>"); }},
-   {t:"打电话给公证处协调", s:"1 精力 · 口碑+3", disabled:S.energy<=0, fn:()=>{ spend(); gain("trust",3);
+   {t:"打电话给公证处协调", s:"1 精力 · 口碑+3", disabled:()=>(S.energy<=0), fn:()=>{ spend(); gain("trust",3);
      log("good","你找了公证处的一位副主任，谈了二十分钟。对方同意采用视频见证加远程签字的方式，前提是券商这边全程双录并出具情况说明。<b>手续两周办完。</b><span style='color:var(--dim)'>这套流程后来写进了营业部的操作手册，成了标准动作。这一年用了七次。口碑+3。</span>"); }},
  ]},
 {id:"e28", title:"隔壁开业", weight:8, phase:["cold","warm","mania"],
@@ -5380,7 +5390,7 @@ EVENTS.push(
  opts:()=>[
    {t:"也搞活动", s:"现金-150万，稳住客户", fn:()=>{ gain("cash",-150); gain("trust",2);
      log("","也搞了两周活动，送鸡蛋送油，转入资产达标的送电饭煲。<b>花了一百五十万，转出止住了。</b><span style='color:var(--dim)'>冉建国看完方案说了一句：「这是二〇一五年的打法。」他没说这个打法不对，他说的是这个打法我们打了十年了。口碑+2。</span>"); }},
-   {t:"把服务做细", s:"1 精力 · 口碑+6", disabled:S.energy<=0, fn:()=>{ spend(); gain("trust",6);
+   {t:"把服务做细", s:"1 精力 · 口碑+6", disabled:()=>(S.energy<=0), fn:()=>{ spend(); gain("trust",6);
      log("good","没搞活动。做了三件事：把老客户按资产分档，每档配固定的客户经理，一个月至少一次主动联系；跟旁边的商场谈了停车协议，客户凭交易流水免两小时；大厅加了两个自助终端，减少排队。<b>前三个月看不出效果，第四个月开始转出率明显下降。</b><span style='color:var(--dim)'>半年后统计，这家营业部的客户留存是全公司最高的。口碑+6。</span>"); }},
    {t:"不理", s:"客户资产-", fn:()=>{ inflow(-Math.round(S.aum*0.008),"隔壁开业");
      log("bad","什么也没做，等它自己过去。<b>活动过去以后转出确实少了，但是走掉的那批没有回来。</b><span style='color:var(--dim)'>走的大多是本来交易就不多的客户。主任在月报里写了一句：「流失客户以低活跃度为主，对收入影响有限。」这句话是对的，但也只是对的。</span>"); }},
@@ -5460,7 +5470,7 @@ EVENTS.push(
    }},
    {t:"不追", s:"许伯衡好感-3", fn:()=>{ addFav("xu",-3);
      log("","你说这个位置不加量。代销部有点意外，说那额度就给别家了。<b>那三个亿后来给了华渝，他们两天卖完。</b><span style='color:var(--dim)'>月度会上许伯衡问了一句为什么不做，你说了理由，他说「知道了」。许伯衡好感-3。</span>"); }},
-   {t:"追加，但只卖给做过风测的老客户", s:"1 精力 · 现金+，口碑+3", disabled:S.energy<=0, fn:()=>{
+   {t:"追加，但只卖给做过风测的老客户", s:"1 精力 · 现金+，口碑+3", disabled:()=>(S.energy<=0), fn:()=>{
      spend(); const sold = Math.round(rnd(6000,10000));
      earnFee(Math.round(sold*0.012),"基金代销手续费"); S.fundHold += sold; gain("trust",3);
      log("good", `额度追加了，但是加了三道限制：只卖给风险评级 C3 以上、近一年做过风测、且单只产品占比不超过总资产两成的客户。名单是系统筛的，一共四百多人。<b>最后卖了 ${wanTxt(sold)}，不到额度的一半。</b><span style='color:var(--dim)'>代销部觉得可惜。一年以后这个决定省了很多事。口碑+3。</span>`); }},
@@ -5490,7 +5500,7 @@ EVENTS.push(
  opts:()=>[
    {t:"让他做", s:"基金保有++，风险+5", fn:()=>{ S.fundHold += 10000; gain("risk",5); gain("cash",300);
      log("","两个月做了两个半亿，全公司代销规模第一。<b>第三个月市场调整，那只产品回撤了百分之十一，超过了历史最大值。</b><span style='color:var(--dim)'>他开始不接电话了。客服那边一天接三十多个咨询电话。风险+5。</span>"); }},
-   {t:"先让合规过一遍话术", s:"1 精力 · 基金保有+，口碑+3", disabled:S.energy<=0, fn:()=>{
+   {t:"先让合规过一遍话术", s:"1 精力 · 基金保有+，口碑+3", disabled:()=>(S.energy<=0), fn:()=>{
      spend(); S.fundHold += 5000; gain("trust",3); addFav("shen",5); gain("cash",150);
      log("good","话术改了七稿。最后定下来的版本里，「跟存款差不多」这类说法全部删掉，换成了明确的回撤区间和历史极值提示，另外要求每次销售必须把最大回撤念出来。<b>卖得慢了一半，两个月做了一个两千万。</b><span style='color:var(--dim)'>第三个月市场调整的时候，这批客户一个投诉都没有。口碑+3，沈清禾好感+5。</span>"); }},
    {t:"不要这个人", s:"士气-2", fn:()=>{ gain("morale",-2);
@@ -5515,7 +5525,7 @@ EVENTS.push(
 
 那个客户经理坐在最后一排，头一直低着。`,
  opts:()=>[
-   {t:"全员重培训", s:"1 精力 · 风险-8，士气-3", disabled:S.energy<=0, fn:()=>{
+   {t:"全员重培训", s:"1 精力 · 风险-8，士气-3", disabled:()=>(S.energy<=0), fn:()=>{
      spend(); gain("risk",-8); gain("morale",-3); addFav("shen",8);
      log("good","全员重训，两天课加一次闭卷考试，不及格的停岗再考。<b>第一次考试有九个人没过。</b><span style='color:var(--dim)'>培训教材是沈清禾自己编的，里面有三十条真实案例，全是同业吃过罚单的。风险-8，士气-3。</span>"); }},
    {t:"处理那个人", s:"风险-4，士气-6", fn:()=>{ gain("risk",-4); gain("morale",-6);
@@ -5540,7 +5550,7 @@ EVENTS.push(
 
 「打电话不一定要推产品。有些客户一年没接到过我们的电话了。」`,
  opts:()=>[
-   {t:"做一轮回访，不推销", s:"1 精力 · 口碑+7", disabled:S.energy<=0, fn:()=>{
+   {t:"做一轮回访，不推销", s:"1 精力 · 口碑+7", disabled:()=>(S.energy<=0), fn:()=>{
      spend(); gain("trust",7);
      log("good","三千多个电话，分两周打完。话术只有三条：告知当前持仓情况、说明后续服务安排、问有没有需要协助的。<b>全程不推荐任何产品，这一条写在考核里。</b><span style='color:var(--dim)'>有客户在电话里问：「你们打电话干啥子？」客户经理说没啥子，就是问一声。对面沉默了几秒，说了句「那谢谢了」。口碑+7。</span>", true); }},
    {t:"推一只低波的", s:"基金保有+，口碑+2", fn:()=>{ S.fundHold += 9000; gain("trust",2); gain("cash",110);
@@ -5567,7 +5577,7 @@ EVENTS.push(
 
 「我这个岁数，跟谁做生意，先看人。」`,
  opts:()=>[
-   {t:"陪他喝", s:"1 精力 · 唐启川合作度+，周砚好感+5", disabled:S.energy<=0, fn:()=>{
+   {t:"陪他喝", s:"1 精力 · 唐启川合作度+，周砚好感+5", disabled:()=>(S.energy<=0), fn:()=>{
      spend(); S.flags.tangMet = 1; S.flags.tangGood = 1; addFav("zhou",5); gain("cash",-30);
      log("good","在公司楼下找了家馆子，喝到晚上十点。他讲了一九九八年下岗那年的事，讲到一半哭了一回，擦完眼泪接着讲。<b>临走的时候他说：「材料我让他们老实做。做不出来就不做，我不要你们帮我编。」</b><span style='color:var(--dim)'>这句话周砚后来提过好几次。</span>"); }},
    {t:"客气两句", s:"唐启川合作度一般", fn:()=>{ S.flags.tangMet = 1;
@@ -5831,7 +5841,7 @@ EVENTS.push(
 
 「另一个办法是就这么做下去，靠研究本身把名次做上来。这个办法我也认，就是慢。可能三年，可能五年。」`,
  opts:()=>[
-   {t:"批预算去跑", s:"1 精力 · 现金-200万，分仓+", disabled:S.energy<=0, fn:()=>{
+   {t:"批预算去跑", s:"1 精力 · 现金-200万，分仓+", disabled:()=>(S.energy<=0), fn:()=>{
      spend(); gain("cash",-200); S.labStar = Math.min(5,S.labStar+1); addFav("he",8);
      log("good","两百万的预算批了，专项使用，要月度报备。贺予非带着两个研究员在上海跑了两个月，路演做了四十多场。<b>下一次派点，从第三十七进到第二十二。</b><span style='color:var(--dim)'>差一点点没进前二十。他回来的时候瘦了六斤。</span>"); }},
    {t:"靠研究说话", s:"慢，但口碑+4", fn:()=>{ gain("trust",4); addFav("he",-3);
@@ -5856,7 +5866,7 @@ EVENTS.push(
      log("good","方案是连夜做的：薪酬加到对方的八成，编制从六人加到十二人，预算翻倍，另外给了研究所独立的费用审批权。<b>合同签的三年。</b><span style='color:var(--dim)'>他签完说了一句：「其实我想留。我就是需要一个留下来的理由。」现金-500万，贺予非好感+15。</span>"); }},
    {t:"让他走", s:"研究所降级", fn:()=>{ const n=npc("he"); n.fav=0; n.gone=1; S.labStar = Math.max(1,S.labStar-2); gain("morale",-5);
      log("bad","你说这个平台确实托不住他，去更大的地方是对的。他点了点头，一个月后办完手续。<b>他带走了四个人，是研究所的核心。</b><span style='color:var(--dim)'>剩下的是三个刚毕业的和一个转岗过来的。那一年研究所没有出过一篇深度报告。士气-5。</span>", true); }},
-   {t:"你走可以，团队留下", s:"1 精力 · 研究所保住", disabled:S.energy<=0, fn:()=>{ spend();
+   {t:"你走可以，团队留下", s:"1 精力 · 研究所保住", disabled:()=>(S.energy<=0), fn:()=>{ spend();
      const n=npc("he"); n.fav=0; n.gone=1; S.labStar = Math.max(1,S.labStar-1); gain("trust",2);
      log("","谈了三个小时。最后达成的条件是：他一个人走，团队留下，公司给团队涨薪并保留他原来的研究方向；他承诺一年内不挖渝江的人。<b>他一个人走的。</b><span style='color:var(--dim)'>走之前把在做的三篇报告都收了尾，其中一篇署的是团队里一个新人的名字。口碑+2。</span>", true); }},
  ]},
@@ -5903,7 +5913,7 @@ EVENTS.push(
 
 回到办公室，你调了一下过去三年的供应商名单。装修、印刷、IT 运维、礼品采购，四大类，一共十一家。其中六家的合作时间超过五年。`,
  opts:()=>[
-   {t:"回去就查", s:"1 精力 · 风险-8", disabled:S.energy<=0, fn:()=>{ spend(); gain("risk",-8); addFav("shen",6);
+   {t:"回去就查", s:"1 精力 · 风险-8", disabled:()=>(S.energy<=0), fn:()=>{ spend(); gain("risk",-8); addFav("shen",6);
      if(S.dirt>0 && RNG()<0.5) gain("dirt",-1);
      log("good","招标流程重做了一遍：三家以上比价、评标委员会随机抽取、结果公示三天。<b>清理了两家长期合作的供应商，其中一家的实际控制人是公司一位中层的亲戚。</b><span style='color:var(--dim)'>那位中层三个月后调岗了。行政部意见很大，说采购效率降了一半。风险-8。</span>", true); }},
    {t:"记下来", s:"什么也不做", fn:()=>{
@@ -5952,7 +5962,7 @@ EVENTS.push(
 
 空户多了，还不能直接定性。得查清开户资料，才能知道是客户暂时没交易，还是有人在凑数。`,
  opts:()=>[
-   {t:"查到底", s:"1 精力 · 风险-10，士气-4", disabled:S.energy<=0, fn:()=>{
+   {t:"查到底", s:"1 精力 · 风险-10，士气-4", disabled:()=>(S.energy<=0), fn:()=>{
      spend(); gain("risk",-10); gain("morale",-4); addFav("shen",8);
      if(S.dirt>0) gain("dirt",-1);
      log("good","合规和运营联合查了三周，把这一百一十七个户的开户资料、双录和资金流水全部过了一遍。<b>查实两家营业部存在诱导员工及亲属开户凑数，涉及三十九个账户。</b>两个主任降级，涉事账户全部销户，当季考核作废重算。<span style='color:var(--dim)'>这件事在内网通报了。通报底下没有人回复，但是那两周投诉信箱一封内部信都没收到。风险-10，士气-4。</span>", true); }},
@@ -6567,7 +6577,7 @@ EVENTS.push(
      inflow(-Math.round(S.aum*0.008), "可疑账户核查后销户");
      gain("risk",-5); addFav("shen",10); addFav("ran",-6); addFav("qin",-4);
      log("good","<b>报告提交了。</b>两个月后反洗钱部门反馈：该账户涉及一起民间借贷纠纷，资金来源合法，但要求加强后续监控。<span style='color:var(--dim)'>老周知道以后销了户，走的时候跟冉建国说了句「我又没做啥子」。冉建国没有解释。风险-5。</span>"); }},
-   {t:"先让冉建国去问清楚", s:"1 精力，结果随机", disabled:S.energy<=0, fn:()=>{
+   {t:"先让冉建国去问清楚", s:"1 精力，结果随机", disabled:()=>(S.energy<=0), fn:()=>{
      spend();
      if(RNG()<0.55){ gain("risk",-3); addFav("ran",5); addFav("shen",3);
        log("good","<b>冉建国约老周喝了个茶，问了两个小时，回来带了一沓材料。</b>四十一笔里有三十八笔能对上工程合同的回款和付款，剩下三笔是他给亲戚周转。<span style='color:var(--dim)'>材料补进了客户档案，可疑交易报告照报，附了说明。反洗钱部门看完没有再追。风险-3。</span>"); }
@@ -6998,6 +7008,7 @@ function actPropSet(lv){
 }
 function renderAll(){
   if(HEADLESS || !S) return;
+  refreshModalOptions();
   renderHeader(); renderStats(); renderWarn(); renderForecast(); renderActions(); renderPanel();
 }
 /* ============ P2 数值追加 ============ */
@@ -7182,7 +7193,7 @@ EVENTS.push(
 
 问题是公司里还有人记得他们当年是怎么走的。`,
  opts:()=>[
-   {t:"要", s:"1 精力 · 现金-，客户资产+", disabled:S.energy<=0, fn:()=>{
+   {t:"要", s:"1 精力 · 现金-，客户资产+", disabled:()=>(S.energy<=0), fn:()=>{
      spend(); gain("cash",-320);
      inflow(Math.round(S.aum*0.03),"挖回来的团队");
      const e = {id:S.empSeq++, name:pick(EMP_NAMES.filter(n=>!S.emps.some(x=>x.name===n))) || "新人",
@@ -7367,7 +7378,7 @@ ${S.flags.ssCollateral
 
 「我不是不能接受有人比我强。我是不能接受这个所里有两个人说了算。」`,
  opts:()=>[
-   {t:"要，贺予非那边我去谈", s:"1 精力 · 研究所+2星，贺予非好感-12", disabled:S.energy<=0 || !S.lab, fn:()=>{
+   {t:"要，贺予非那边我去谈", s:"1 精力 · 研究所+2星，贺予非好感-12", disabled:()=>(S.energy<=0 || !S.lab), fn:()=>{
      spend(); S.labStar = Math.min(5,S.labStar+2); addFav("he",-12); gain("cash",-300);
      log("good","四个人整组过来，独立成一个汽车研究中心，直接向公司汇报，不归研究所管。<b>研究所的覆盖能力一下上了两个台阶。</b><span style='color:var(--dim)'>你跟贺予非谈了两个小时，说的是「你还是首席，他是专家」。他说明白了。<br>那个月他开了六次会，每次都坐在最边上。贺予非好感-12。</span>", true); }},
    {t:"不要", s:"贺予非好感+10", fn:()=>{ addFav("he",10);
