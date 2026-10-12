@@ -2113,8 +2113,14 @@ function ibDetail(i){
   const waiting = S.month < p.waitTo;
   const last = st.length-1;
   const opts = [];
-  opts.push({t:`尽调（第 ${p.dd+1} 次）`, s:`花 1 精力 + ${BALANCE.ib.ddCost}万。${p.dd===0?"揭开一半":"把底下的全看清"}`,
-    disabled:()=>(S.energy<=0 || S.cash<BALANCE.ib.ddCost || p.dd>=2 || p.stage>=2), fn:()=>ibDD(i)});
+  if(p.dd>=2){
+    opts.push({t:"尽调已完成（2/2）", s:"已查清项目风险；发现的问题需整改，继续尽调不会消除。", disabled:true});
+  } else if(p.stage>=2){
+    opts.push({t:"尽调已截止", s:"已过可尽调阶段，不能再补做尽调。", disabled:true});
+  } else {
+    opts.push({t:`尽调（第 ${p.dd+1} 次）`, s:`花 1 精力 + ${BALANCE.ib.ddCost}万。${p.dd===0?"揭开一半":"把底下的全看清"}（最多2次）`,
+      disabled:()=>(S.energy<=0 || S.cash<BALANCE.ib.ddCost || p.dd>=2 || p.stage>=2), fn:()=>ibDD(i)});
+  }
   if(p.stage<last){
     opts.push({t:`→ 推进到「${st[p.stage+1]}」`,
       s: waiting ? `还得等 ${p.waitTo-S.month} 个月` : `花 1 精力，收 ${ibFeeAt(p,p.stage+1)}万`,
