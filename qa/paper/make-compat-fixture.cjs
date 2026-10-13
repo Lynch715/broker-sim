@@ -1,0 +1,6 @@
+const fs=require('fs'),vm=require('vm'),path=require('path');const dir=path.resolve(__dirname,'../..'),html=fs.readFileSync(dir+'/index.html','utf8');const ctx={console,Math,Date};vm.createContext(ctx);vm.runInContext(html.match(/<script>([\s\S]*?)<\/script>/)[1],ctx);const G=ctx.BrokerGame;G.newGame('late-load-qa',null,'steady',120);const s=G.getState();s.month=97;s.cash=54321;s.tab='team';s.business={levels:{advisory:2}};
+const legacy=`<script type="text/javascript">(function(){var media=window.matchMedia('(prefers-color-scheme: dark)');window.matchMedia=function(){return {matches:media.matches,addListener:function(){}};};})();</script>`;
+const storage=`<script type="text/javascript">Object.defineProperty(window,'localStorage',{value:(function(){var data={'yjzq_save':${JSON.stringify(JSON.stringify(s))}};return {getItem:function(k){return data[k]||null;},setItem:function(k,v){data[k]=String(v);},removeItem:function(k){delete data[k];}};})()});</script>`;
+fs.writeFileSync(__dirname+'/compat-review.html',html.replace('<script>',legacy+storage+'<script>'));
+fs.writeFileSync(__dirname+'/legacy-start-review.html',html.replace('<script>',legacy+storage.replace(JSON.stringify(JSON.stringify(s)),'null')+'<script>'));
+console.log('Created isolated legacy-start and ninth-year fixtures; browser saves are untouched.');

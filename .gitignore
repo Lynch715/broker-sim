@@ -2,3 +2,5 @@
 node_modules/
 qa/paper/review.html
 qa/paper/*.png
+qa/paper/compat-review.html
+qa/paper/legacy-start-review.html

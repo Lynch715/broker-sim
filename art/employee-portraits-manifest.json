@@ -1,0 +1,288 @@
+{
+  "generator": "built-in image_gen.imagegen",
+  "source": "source/employee-portraits-v01.png",
+  "prompt": "employee-portraits-prompt.txt",
+  "count": 40,
+  "entries": [
+    {
+      "name": "陈斌",
+      "file": "runtime/employees/employee-01.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "bd51e2a2b88a0f7f273ce396f1b62ead203927a130419d38032311445d91287c"
+    },
+    {
+      "name": "唐蕾",
+      "file": "runtime/employees/employee-02.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "1c9f289890555f8ba986448d0391d787fbb545b90f434bdc13fc54e477635aa0"
+    },
+    {
+      "name": "何小军",
+      "file": "runtime/employees/employee-03.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "9190fc832b8e36d419b557c70eb215745028426ed9a3ea6849a2719a80fcc1f8"
+    },
+    {
+      "name": "李婷",
+      "file": "runtime/employees/employee-04.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "b4dc3058761be858889bf470f605469f430e03e2286874a90755795848d37cdc"
+    },
+    {
+      "name": "邓一凡",
+      "file": "runtime/employees/employee-05.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "baa76403f38f860976c2e0099233d07e587c5410142fe3cf7da97b76728d8427"
+    },
+    {
+      "name": "彭浩",
+      "file": "runtime/employees/employee-06.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "527e557f3887058ab189a67a7814aa3c1b5980b06a0da696ca4a1bf84853a659"
+    },
+    {
+      "name": "马晓燕",
+      "file": "runtime/employees/employee-07.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "c2f81dae1e56b8ced9e1e6ed5fc0f1096618dc504a1f0a469784cc9a71f7d891"
+    },
+    {
+      "name": "王川",
+      "file": "runtime/employees/employee-08.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "d435c1f9ca573a05e808db6ba145d5726df9efd0cfdd4dcdf45f6d1255414975"
+    },
+    {
+      "name": "杨立",
+      "file": "runtime/employees/employee-09.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "0aff8d770a940135d5a7fe1a9db3c5e10a45766ade44be4eafde281ab0e80468"
+    },
+    {
+      "name": "刘洋",
+      "file": "runtime/employees/employee-10.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "39c1826516834e285aaf1124b22d26fa1010414c1f5701787c9b2b2b28be6227"
+    },
+    {
+      "name": "宋佳",
+      "file": "runtime/employees/employee-11.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "3046a418e1f4c8d2f1439619b4fb3abe5903dbc41dba439beccb5e552db28bb2"
+    },
+    {
+      "name": "舒畅",
+      "file": "runtime/employees/employee-12.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "158a436fec5b3c9193016106066c069b2424cb2006cae634c4991d74d0da94af"
+    },
+    {
+      "name": "黄明伟",
+      "file": "runtime/employees/employee-13.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "2688d2c259853b6e8f01140c7cf6ad11cfa854e1509a999dbe5a9fe62ff017ce"
+    },
+    {
+      "name": "罗小兵",
+      "file": "runtime/employees/employee-14.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "d70ffa7d05d461b09130df791bcb51dcc3507f338e3b9a83b6a05810a5788e9d"
+    },
+    {
+      "name": "蒋敏",
+      "file": "runtime/employees/employee-15.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "53fdbabc8d0e6e45d6ba0195f4335cf34e1029d426cbd2a9835bdec57cabfd0d"
+    },
+    {
+      "name": "傅强",
+      "file": "runtime/employees/employee-16.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "7bd0d212ca78553c3e309f95af952f80da737b8df6579c05e0610a275f56f3d6"
+    },
+    {
+      "name": "谢雨薇",
+      "file": "runtime/employees/employee-17.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "6e07e5a1d7dfa34a531194e069c0c874795bc97c57fb584efa9d3b8f40ded259"
+    },
+    {
+      "name": "秦朗",
+      "file": "runtime/employees/employee-18.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "0fca515e988f6a0ca5a38950b77b5f0bdbd228b495a5efa4679995103603816f"
+    },
+    {
+      "name": "石磊",
+      "file": "runtime/employees/employee-19.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "6603c75457ac3827be26ea6f89ede89537352ebb8df81d55ad3abf441d0a0225"
+    },
+    {
+      "name": "吴倩",
+      "file": "runtime/employees/employee-20.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "b0bdac5291e4b8a3651893f3062144af25c2480a41733bc66365aee3e6308bce"
+    },
+    {
+      "name": "周文倩",
+      "file": "runtime/employees/employee-21.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "23c7119855e2e28ec4b8fd30bd61a4521d57018a7b1682537f830ea72374b2d6"
+    },
+    {
+      "name": "丁一鸣",
+      "file": "runtime/employees/employee-22.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "16fffb525ea580830e8c57b377f4092075a843b52ac674d7bdc74b2c666767e7"
+    },
+    {
+      "name": "柏杨",
+      "file": "runtime/employees/employee-23.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "8def4c29e177e8faad91e5e52036f99534eeee6e5f54e54a5bd4dee206f8d322"
+    },
+    {
+      "name": "龚雪",
+      "file": "runtime/employees/employee-24.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "0f137592f4c257302491aa4ab513c8764582b82b262b5e00c09057b4e3e4b816"
+    },
+    {
+      "name": "冯海涛",
+      "file": "runtime/employees/employee-25.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "725d825e7ebf12afa849860ea7a91b5a6560ed8bebf841ab0ae9e1805858e3b1"
+    },
+    {
+      "name": "任江",
+      "file": "runtime/employees/employee-26.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "7a60d6662738ff41e3b928001e32d5ea81dc56a77519cd511a3678e94c2b6588"
+    },
+    {
+      "name": "练伟",
+      "file": "runtime/employees/employee-27.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "86b12f9356d9b31b2b6026a8af6759187e7a40b32f8ad588c31921adab180795"
+    },
+    {
+      "name": "雷小刚",
+      "file": "runtime/employees/employee-28.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "9140ab96013571761a19bfe70393e9ae797688c6ad0e63b7ae78c26400930d62"
+    },
+    {
+      "name": "陶然",
+      "file": "runtime/employees/employee-29.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "0f0fa620f9a1d5febf029875d73a183a3c606882c54994d2f6cc9f43cca2fb57"
+    },
+    {
+      "name": "米雪",
+      "file": "runtime/employees/employee-30.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "fd7925dfe44f454326f323266b7596beafff903673cdd708428ad2272cb3d1c7"
+    },
+    {
+      "name": "简宁",
+      "file": "runtime/employees/employee-31.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "b36cbb2b09072df7b1396abc013f2b6a2de06f3e4b8233e4e6147bceef6205e9"
+    },
+    {
+      "name": "裴东",
+      "file": "runtime/employees/employee-32.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "2da81ba13f10290ce1d1075f98d8f5b7e3922e5339e0e2a5bbf38f3978ec72d2"
+    },
+    {
+      "name": "滕飞",
+      "file": "runtime/employees/employee-33.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "da99fc24d5662c5a452d6f2f306e2254a1e22885498fd1efb2ecd44d6a2ac1b6"
+    },
+    {
+      "name": "樊莉",
+      "file": "runtime/employees/employee-34.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "94101c8d4d3e85ad7e6b320a654154903ebb4d4475532b958e36ce79d2c7a82b"
+    },
+    {
+      "name": "巫小川",
+      "file": "runtime/employees/employee-35.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "40e96ad91c00d5330007a73942fabf5d4c774883719ed8b085682e7f03a06f32"
+    },
+    {
+      "name": "扈成",
+      "file": "runtime/employees/employee-36.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "d1f8b69d54eff07b050fcfa227f59c5e880bebac02a34a75d6ecef964bda8751"
+    },
+    {
+      "name": "翁立新",
+      "file": "runtime/employees/employee-37.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "ba72875c2f916efb265ccff9ce879a7f8b9e7b0a23a39afe7690555317f74e1d"
+    },
+    {
+      "name": "蒲阳",
+      "file": "runtime/employees/employee-38.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "7b4e2f7501a348fdd5477844dc4550d2b30bba32236ac6e03e5777fcc6f79f6b"
+    },
+    {
+      "name": "郎月",
+      "file": "runtime/employees/employee-39.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "49e2ec62090454ede8111c7686b41b4d1b8c7937b41ad9f1a60108ffd1e80eb9"
+    },
+    {
+      "name": "戴昕",
+      "file": "runtime/employees/employee-40.webp",
+      "width": 192,
+      "height": 192,
+      "sha256": "a7eb4c34d21d44f0aa06a671b6b260c6aa96f71d4a31a6a22c99c272b7235be2"
+    }
+  ]
+}
