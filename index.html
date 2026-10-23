@@ -480,6 +480,7 @@ button.main:hover{filter:brightness(1.08);color:var(--ongold)}
     </div>
     <label class="term-choice">这届任期 <select id="termSelect"><option value="120">十年 · 长期经营</option><option value="72">六年 · 两轮牛熊</option><option value="36">三年 · 经典开局</option></select></label>
     <button class="start" onclick="startFromGuide()">接过钥匙，上任</button>
+    <button class="sec" onclick="showSaveTools()">导入 / 导出存档</button>
     <button class="sec" id="guideGallery" style="display:none" onclick="showGallery()">图鉴 · 结局 / 成就 / 天赋</button>
     <button class="sec" id="guideChal" style="display:none" onclick="guideChallenge()">挑战模式 / 指定种子</button>
   </div></div>
@@ -504,7 +505,7 @@ button.main:hover{filter:brightness(1.08);color:var(--ongold)}
   <div class="toolbar">
     <button onclick="showGallery()"><svg class="broker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h7l2 2 2-2h7v16h-7l-2 1-2-1H3zM12 6v15"/></svg> 图鉴</button>
     <button onclick="showChallengePicker()">换个打法</button>
-    <button onclick="showSettings()"><svg class="broker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18M7 3v6m10 0v6m-7 0v6"/></svg> 设置</button>
+    <button onclick="if(typeof showSettings==='function' &amp;&amp; document.documentElement.getAttribute('data-boot')==='ready'){showSettings()}else{showSaveTools()}"><svg class="broker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18M7 3v6m10 0v6m-7 0v6"/></svg> 设置 / 存档</button>
     <button onclick="askRestart()"><svg class="broker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 8a8 8 0 1 0 1 8M19 3v5h-5"/></svg> 重开一局</button>
   </div>
 
@@ -543,8 +544,29 @@ button.main:hover{filter:brightness(1.08);color:var(--ongold)}
   </div>
 </div>
 
+<style>
+#saveTools{position:fixed;top:0;right:0;bottom:0;left:0;z-index:10001;overflow:auto;background:#edf0f6;color:#25365e;padding:24px 18px;padding:calc(24px + env(safe-area-inset-top,0px)) max(18px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px))}
+#saveTools[hidden]{display:none}#saveTools .save-card{max-width:560px;margin:5vh auto;padding:24px;background:#fff;border:1px solid #cad0dc;border-radius:12px}
+#saveTools h2{margin:0 0 16px;font-size:24px}#saveTools p{line-height:1.7}#saveTools button{min-height:44px;white-space:normal;background:#25365e;color:#fff;border:1px solid #25365e;margin:5px 5px 5px 0}#saveTools button:disabled{opacity:.45;cursor:default}
+#saveTools .save-close{float:right;background:#fff;color:#25365e;margin:0 0 10px 10px}#saveTools label{display:block;margin:18px 0 8px;font-weight:700}#saveTools input{max-width:100%;font:inherit;color:#25365e}#savePreview{white-space:pre-wrap;overflow-wrap:anywhere;background:#edf0f6;padding:14px;border-radius:8px;line-height:1.7}#saveStatus{white-space:pre-wrap;overflow-wrap:anywhere;min-height:28px}
+@media(max-width:400px){#saveTools .save-card{padding:16px;margin:12px auto}}
+</style>
+<section id="saveTools" role="dialog" aria-modal="true" aria-labelledby="saveTitle" hidden>
+ <div class="save-card">
+  <button class="save-close" onclick="closeSaveTools()">返回</button><h2 id="saveTitle" tabindex="-1">存档导入与导出</h2>
+  <p>下载备份后，可在另一台设备或浏览器中导入。备份包含本局进度，以及图鉴、成就和天赋。</p>
+  <button id="saveExport" onclick="exportGameBackup()">导出存档</button>
+  <p>导出的是浏览器最近保存的进度。月末事项尚未处理完时，备份保留结算前的进度。</p>
+  <label for="saveFile">导入存档（JSON 文件）</label><input id="saveFile" type="file" accept=".json,application/json" onchange="readGameBackup(this.files[0])">
+  <p>选好文件后，先核对进度，再确认导入。当前数据会自动备份，可用下方按钮恢复。</p>
+  <div id="savePreview" hidden></div><button id="saveImportConfirm" onclick="confirmGameImport()" hidden>确认导入并重新载入</button>
+  <hr><button id="saveRestore" onclick="previewPreviousSave()">恢复导入前的存档</button>
+  <p id="saveStatus" role="status" aria-live="polite"></p>
+ </div>
+</section>
+
 <section id="bootError" role="alert" hidden style="position:fixed;top:0;right:0;bottom:0;left:0;z-index:9999;background:#edf0f6;color:#25365e;padding:calc(36px + env(safe-area-inset-top,0px)) 24px;overflow:auto">
-  <div style="max-width:520px;margin:12vh auto"><h2>页面还没载入完整</h2><p id="bootMessage">请重新载入。若仍无法打开，可以先导出进度，再用更新的浏览器打开游戏。</p><p>现有进度会保留在这台设备上。</p><button onclick="location.reload()">重新载入</button> <button onclick="exportBootSave()">导出进度备份</button><p id="bootBackupStatus"></p></div>
+  <div style="max-width:520px;margin:12vh auto"><h2>页面还没载入完整</h2><p id="bootMessage">请重新载入。若仍无法打开，可以先导出进度，再用更新的浏览器打开游戏。</p><p>现有进度会保留在这台设备上。</p><button onclick="location.reload()">重新载入</button> <button onclick="showSaveTools()">存档导入 / 导出</button> <button onclick="exportBootSave()">导出进度备份</button><p id="bootBackupStatus"></p></div>
 </section>
 <script type="text/javascript">
 (function(){
@@ -553,18 +575,116 @@ button.main:hover{filter:brightness(1.08);color:var(--ongold)}
     var box=document.getElementById('bootError');if(box)box.hidden=false;
     if(message)document.getElementById('bootMessage').textContent=message;
   };
-  window.exportBootSave=function(){
-    var status=document.getElementById('bootBackupStatus');
-    try{
-      var raw=localStorage.getItem('yjzq_save');
-      if(!raw){status.textContent='这台设备上暂时没有保存的进度。';return;}
-      var blob=new Blob([raw],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
-      a.href=url;a.download='渝江证券-进度备份.json';document.body.appendChild(a);a.click();a.parentNode.removeChild(a);
-      setTimeout(function(){URL.revokeObjectURL(url);},1000);status.textContent='已导出原始进度，请保留这份备份。';
-    }catch(e){status.textContent='暂时无法导出，请保留浏览器数据，稍后再试。';}
-  };
   window.addEventListener('error',function(event){
     if(document.documentElement.getAttribute('data-boot')!=='ready' && !event.target.tagName)window.reportBootFailure();
+  });
+})();
+(function(){
+  var pending=null,readVersion=0,previousFocus=null,previousOverflow='',BACKUP_KEY='yjzq_import_backup';
+  function el(id){return document.getElementById(id);}
+  function status(message){el('saveStatus').textContent=message;}
+  function object(value){return value!==null && typeof value==='object' && !Array.isArray(value);}
+  function checkTree(value){
+    if(value && typeof value==='object')Object.keys(value).forEach(function(key){
+      if(key==='__proto__'||key==='prototype'||key==='constructor')throw new Error('文件含有不支持的数据字段。');
+      checkTree(value[key]);
+    });
+    else if(typeof value==='number' && !isFinite(value))throw new Error('文件中有无效数字。');
+  }
+  function validateSave(raw){
+    var s=JSON.parse(raw);checkTree(s);
+    if(!object(s)||[1,2].indexOf(s.ver)===-1)throw new Error('这不是可识别的渝江证券存档。');
+    if(typeof s.month!=='number'||s.month%1!==0||s.month<1||s.month>121)throw new Error('存档月份不完整。');
+    ['cash','aum','index','energy','mood'].forEach(function(k){if(typeof s[k]!=='number'||!isFinite(s[k]))throw new Error('存档缺少有效的账面数据：'+k);});
+    ['outlets','emps','npcs'].forEach(function(k){if(!Array.isArray(s[k])||!s[k].every(object))throw new Error('存档中的人员或营业部数据不完整。');});
+    if(s.maxMonth!==undefined&&[24,36,72,120].indexOf(s.maxMonth)===-1)throw new Error('存档任期不受支持。');
+    if(typeof window.validateSaveImport==='function')window.validateSaveImport(s);
+    return s;
+  }
+  function validateMeta(raw){
+    if(raw===null)return;
+    var m=JSON.parse(raw);checkTree(m);if(!object(m))throw new Error('图鉴与成就数据格式不正确。');
+    ['endings','ach','talents'].forEach(function(k){if(m[k]!==undefined&&!object(m[k]))throw new Error('图鉴与成就数据不完整。');});
+    ['runs','bestScore','exp'].forEach(function(k){if(m[k]!==undefined&&(typeof m[k]!=='number'||!isFinite(m[k])))throw new Error('图鉴与成就数据含有无效数字。');});
+  }
+  function snapshot(){return {save:localStorage.getItem('yjzq_save'),meta:localStorage.getItem('yjzq_meta')};}
+  function write(key,value){if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value);}
+  function reset(){pending=null;readVersion++;el('savePreview').hidden=true;el('saveImportConfirm').hidden=true;el('saveFile').value='';}
+  window.showSaveTools=function(){
+    previousFocus=document.activeElement;previousOverflow=document.body.style.overflow;reset();
+    el('saveTools').hidden=false;document.body.style.overflow='hidden';status('');
+    try{el('saveRestore').disabled=!localStorage.getItem(BACKUP_KEY);}catch(e){status('浏览器暂时无法读取本地存储。');el('saveRestore').disabled=true;}
+    el('saveTitle').focus();
+  };
+  window.closeSaveTools=function(){reset();el('saveTools').hidden=true;document.body.style.overflow=previousOverflow;if(previousFocus&&previousFocus.focus)previousFocus.focus();};
+  window.exportGameBackup=function(){
+    try{
+      var data=snapshot();if(!data.save){status('这台设备上暂时没有已保存的本局进度。');return;}
+      var payload={format:'yjzq-backup',version:1,exportedAt:new Date().toISOString(),save:data.save,meta:data.meta};
+      var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=url;a.download='渝江证券-存档备份-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.parentNode.removeChild(a);
+      setTimeout(function(){URL.revokeObjectURL(url);},30000);status('已发起下载，请在浏览器的下载记录中确认备份文件。');
+    }catch(e){status('导出失败：'+e.message+'\n现有存档没有改动。');}
+  };
+  window.exportBootSave=function(){window.showSaveTools();window.exportGameBackup();};
+  function preview(data,restore){
+    var s=data.save===null&&restore?null:validateSave(data.save);if(data.hasMeta)validateMeta(data.meta);
+    pending=data;pending.restore=restore;
+    el('savePreview').textContent=(restore?'准备恢复导入前的数据':'准备导入备份')+'\n'+(s?'第'+(Math.floor((s.month-1)/12)+1)+'年'+((s.month-1)%12+1)+'月 · 公司现金 '+s.cash+' 万元':'当时没有进行中的游戏')+'\n'+(data.hasMeta?'将一并替换图鉴、成就和天赋。':'这是旧版原始存档，保留当前图鉴、成就和天赋。')+'\n'+(restore?'确认后重新载入。':'当前数据会先自动备份，再替换并重新载入。');
+    el('savePreview').hidden=false;el('saveImportConfirm').hidden=false;el('saveImportConfirm').textContent=restore?'确认恢复并重新载入':'确认导入并重新载入';
+    status('文件已检查，请核对上方进度。');
+  }
+  window.readGameBackup=function(file){
+    reset();if(!file)return;if(file.size>20*1024*1024){status('文件超过20MB，请选择游戏导出的 JSON 存档。');return;}
+    var version=readVersion,reader=new FileReader();status('正在读取文件……');
+    reader.onload=function(){
+      if(version!==readVersion)return;
+      try{
+        var raw=String(reader.result).replace(/^\uFEFF/,''),o=JSON.parse(raw),data;
+        if(object(o)&&o.format==='yjzq-backup'){
+          if(o.version!==1||typeof o.save!=='string'||(o.meta!==null&&typeof o.meta!=='string'))throw new Error('备份版本或内容不受支持。');
+          data={save:o.save,meta:o.meta,hasMeta:true};
+        }else data={save:raw,hasMeta:false};
+        preview(data,false);
+      }catch(e){pending=null;status('无法导入：'+e.message+'\n当前存档没有改动，请重新选择文件。');}
+    };
+    reader.onerror=function(){if(version===readVersion)status('文件读取失败，请重新选择文件。当前存档没有改动。');};reader.readAsText(file,'UTF-8');
+  };
+  window.previewPreviousSave=function(){
+    reset();try{
+      var raw=localStorage.getItem(BACKUP_KEY);if(!raw){status('还没有导入前的备份。');return;}
+      var data=JSON.parse(raw);
+      if(!object(data)||(data.save!==null&&typeof data.save!=='string')||(data.meta!==null&&typeof data.meta!=='string'))throw new Error('备份格式不正确。');
+      // A broken original save must remain restorable byte for byte for diagnosis.
+      pending={save:data.save,meta:data.meta,hasMeta:true,restore:true};
+      el('savePreview').textContent='准备恢复上次导入前的原始数据（含图鉴、成就和天赋）。\n恢复后重新载入；如果原数据本身有故障，可再次导出交给作者定位。';
+      el('savePreview').hidden=false;el('saveImportConfirm').hidden=false;el('saveImportConfirm').textContent='确认恢复并重新载入';status('请确认是否恢复导入前的数据。');
+    }catch(e){status('无法读取备份：'+e.message);}
+  };
+  window.confirmGameImport=function(){
+    if(!pending)return;
+    var before=null,data=pending;
+    try{
+      if(typeof window.saveImportBusy==='function'&&window.saveImportBusy())throw new Error('请先处理完月末事项，再导入或恢复存档。');
+      before=snapshot();
+      // Back up first. If storage is full or blocked, stop before touching the game keys.
+      if(!data.restore)localStorage.setItem(BACKUP_KEY,JSON.stringify(before));
+      write('yjzq_save',data.save);if(data.hasMeta)write('yjzq_meta',data.meta);
+    }catch(e){
+      var rolledBack=true;
+      if(before){try{write('yjzq_save',before.save);write('yjzq_meta',before.meta);}catch(rollbackError){rolledBack=false;}}
+      status('导入未完成：'+e.message+'\n'+(rolledBack?'当前进度已保留。':'请保留浏览器数据，使用“恢复导入前的存档”找回原数据。'));return;
+    }
+    pending=null;el('saveImportConfirm').hidden=true;status('已保存，正在重新载入……');location.reload();
+  };
+  document.addEventListener('keydown',function(event){
+    if(el('saveTools').hidden)return;
+    if(event.key==='Escape'){event.preventDefault();window.closeSaveTools();}
+    if(event.key==='Tab'){
+      var buttons=el('saveTools').querySelectorAll('button:not([disabled]):not([hidden]),input'),first=buttons[0],last=buttons[buttons.length-1];
+      if(event.shiftKey&&(document.activeElement===first||!el('saveTools').contains(document.activeElement))){event.preventDefault();last.focus();}
+      else if(!event.shiftKey&&(document.activeElement===last||!el('saveTools').contains(document.activeElement))){event.preventDefault();first.focus();}
+    }
   });
 })();
 </script>
@@ -1246,7 +1366,7 @@ function decisionRows(before){
 }
 function installDecisionFeedback(){
  document.addEventListener('click',e=>{
-  const b=e.target.closest('button');if(!b||b.disabled||!S||S.over||DECISION_TX||b.dataset.receipt)return;
+  const b=e.target.closest('button');if(!b||b.closest('#saveTools')||b.disabled||!S||S.over||DECISION_TX||b.dataset.receipt)return;
   DECISION_TX={state:S,before:decisionSnapshot(),log:S.log[0],label:((b.querySelector('b')||b.childNodes[0]||b).textContent||b.textContent).trim(),modals:[],flush:false,monthly:false};
  },true);
  document.addEventListener('click',()=>{
@@ -1303,7 +1423,7 @@ function showModal(title, body, opts, html, pic){
       if(optionDisabled(o)){ b.disabled = true; return; }
       $("#mask").classList.remove("show");
       if(o.fn) o.fn();
-      if(!$("#mask").classList.contains("show")) flushMQ();
+      if(!$("#mask").classList.contains("show") && document.getElementById("saveTools").hidden) flushMQ();
     };
     box.appendChild(b);
   });
@@ -1664,6 +1784,28 @@ function load(){
     return false;
   }
 }
+function validateSaveImport(s){
+  const defaults=initialState();
+  for(const key of Object.keys(defaults)){
+    const value=s[key],expected=defaults[key];if(value===undefined||expected===null)continue;
+    if(Array.isArray(expected)){if(!Array.isArray(value))throw new Error('存档字段格式不正确：'+key);}
+    else if(typeof expected==='object'){if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('存档字段格式不正确：'+key);}
+    else if(typeof value!==typeof expected)throw new Error('存档字段格式不正确：'+key);
+  }
+  for(const key of ['outlets','emps','npcs']){
+    const template=defaults[key][0];
+    for(const entry of s[key])for(const field of Object.keys(template)){
+      if(key==='outlets'&&field==='mgr'&&entry[field]===null)continue;
+      if(typeof template[field]==='number'&&(typeof entry[field]!=='number'||!Number.isFinite(entry[field])))throw new Error('人员或营业部数据缺少有效字段：'+field);
+    }
+  }
+  if(s.cycle!==undefined&&s.cycle!==null){
+    if(!Array.isArray(s.cycle.rets)||!Array.isArray(s.cycle.bd)||s.cycle.rets.length<=(s.maxMonth||36))throw new Error('存档行情数据不完整。');
+    if(!s.cycle.rets.every(n=>typeof n==='number'&&Number.isFinite(n))||!s.cycle.bd.every(row=>Array.isArray(row)&&typeof row[0]==='string'&&Number.isFinite(row[1])&&Number.isFinite(row[2])))throw new Error('存档行情数据格式不正确。');
+  }
+}
+function saveImportBusy(){return resolvingMonth;}
+
 /* ============ 玩家行动 ============ */
 function spend(n){ S.energy -= (n===undefined?1:n); if(S.energy<0) S.energy=0; }
 function needEnergy(){
@@ -8387,7 +8529,7 @@ function panelBusiness(){
  return h;
 }
 function showSettings(){
- const opts=[{t:'界面配色',fn:showSkin}];
+ const opts=[{t:'存档导入 / 导出',s:'下载备份、换设备继续，或恢复导入前的进度。',fn:showSaveTools},{t:'界面配色',fn:showSkin}];
  if(S&&!S.over&&!S.chal&&endM()<120)opts.push({t:'延长至十年经营',s:'保留现有账目与已经生成的行情，补齐后续牛熊周期。',fn:()=>{extendCareer();renderAll();save();}});
  opts.push({t:'返回游戏'});
  showModal('设置与联系',`渝江证券 · 经营手记\n\nWeChat：Lynchrrr\n\n欢迎告诉我哪里不好玩，或是哪笔账出了问题。\n\n${S?'本届任期：'+endM()/12+'年。\n':''}进度保存在当前浏览器。`,opts);
@@ -8438,8 +8580,9 @@ if(typeof document!=='undefined'){
  const paint=root=>{const walker=document.createTreeWalker(root,4),nodes=[];let n;while(n=walker.nextNode())if(!['SCRIPT','STYLE','TEXTAREA'].includes((n.parentElement&&n.parentElement.tagName))&&/\[icon:[a-z]+\]/.test(n.nodeValue))nodes.push(n);for(const node of nodes){const box=document.createElement('span');box.innerHTML=node.nodeValue.replace(/\[icon:([a-z]+)\]/g,(_,id)=>svgIcon(id));node.replaceWith(...box.childNodes);}};
  paint(document.body);new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType===1)paint(n);else if(n.nodeType===3&&n.parentElement)paint(n.parentElement);}).observe(document.body,{subtree:true,childList:true});
  const mask=document.querySelector('#mask');let previous=null;
- const sync=()=>{const showing=mask.classList.contains('show');document.querySelector('#app').inert=showing||document.querySelector('#guide').classList.contains('show')||document.querySelector('#endScreen').classList.contains('show');if(showing){if(!mask.contains(document.activeElement))previous=document.activeElement;document.querySelector('#mTitle').focus({preventScroll:true});}else if(previous&&previous.isConnected){previous.focus({preventScroll:true});previous=null;}};
+ const sync=()=>{const showing=mask.classList.contains('show'),saving=!document.querySelector('#saveTools').hidden;document.querySelector('#app').inert=saving||showing||document.querySelector('#guide').classList.contains('show')||document.querySelector('#endScreen').classList.contains('show');if(saving){if(!document.querySelector('#saveTools').contains(document.activeElement))document.querySelector('#saveTitle').focus();return;}if(showing){if(!mask.contains(document.activeElement))previous=document.activeElement;document.querySelector('#mTitle').focus({preventScroll:true});}else if(previous&&previous.isConnected){previous.focus({preventScroll:true});previous=null;}};
  for(const el of [mask,document.querySelector('#guide'),document.querySelector('#endScreen')])new MutationObserver(sync).observe(el,{attributes:true,attributeFilter:['class']});
+ new MutationObserver(sync).observe(document.querySelector('#saveTools'),{attributes:true,attributeFilter:['hidden']});
  document.addEventListener('keydown',e=>{if(e.key!=='Tab'||!mask.classList.contains('show'))return;const list=[...mask.querySelectorAll('button:not(:disabled),input,select,summary')].filter(x=>x.getClientRects().length),first=list[0],last=list[list.length-1];if(!first)return;if(e.shiftKey&&(document.activeElement===first||!list.includes(document.activeElement))){e.preventDefault();last.focus();}else if(!e.shiftKey&&(document.activeElement===last||!list.includes(document.activeElement))){e.preventDefault();first.focus();}});
 }
 /* ============ 启动 ============ */
