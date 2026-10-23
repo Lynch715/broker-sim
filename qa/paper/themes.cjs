@@ -37,4 +37,8 @@ test('旧配色标识及未知配色回退兼容，其他弹窗不残留色卡�
 test('配色菜单后可正常打开种子输入弹窗',()=>{
  b.w.showSkin();b.w.askSeed(null);assert(b.d.querySelector('#seedInput'));assert(!b.d.querySelector('#mOpts').classList.contains('skin-options'));assert.equal(b.d.querySelectorAll('.skin-swatch').length,0);assert.equal(JSON.stringify(b.w.BrokerGame.getState()),state);assert.deepEqual(b.errors,[]);
 });
+test('账面说明随页面滚动收起，不遮挡后续操作且不改变存档',()=>{
+ const stat=b.d.querySelector('.stat');b.w.tapTip(stat);assert(stat.classList.contains('tipOn'));
+ b.w.dispatchEvent(new b.w.Event('scroll'));assert(!stat.classList.contains('tipOn'));assert.equal(b.w.localStorage.getItem('yjzq_save'),raw);assert.equal(b.w.eval('RNG_STATE'),rng);
+});
 b.dom.window.close();console.log(count+' theme checks passed');
