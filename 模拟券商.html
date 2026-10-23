@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-boot="loading">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -87,9 +87,9 @@ body{background:var(--bg);color:var(--txt);font-family:"PingFang SC","Microsoft 
   padding:calc(12px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(80px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left))}
 
 /* 开场说明 */
-#guide{position:fixed;inset:0;z-index:80;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--bg2);color:var(--txt)}
+#guide{position:fixed;top:0;right:0;bottom:0;left:0;z-index:80;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--bg2);color:var(--txt)}
 #guide.show{display:block}
-#guide .inner{width:min(100%,1040px);min-height:100%;margin:auto;display:flex;align-items:flex-end;
+#guide .inner{width:100%;max-width:1040px;min-height:100%;margin:auto;display:flex;align-items:flex-end;
   padding:calc(40px + env(safe-area-inset-top)) calc(24px + env(safe-area-inset-right)) max(42px,calc(24px + env(safe-area-inset-bottom))) calc(24px + env(safe-area-inset-left));
   background-image:linear-gradient(180deg,rgba(var(--veil2),.12) 0%,rgba(var(--veil2),.52) 44%,rgba(var(--veil2),.97) 82%),var(--hero-image,none);
   background-size:cover;background-position:center 42%}
@@ -97,7 +97,7 @@ body{background:var(--bg);color:var(--txt);font-family:"PingFang SC","Microsoft 
   #guide .inner{background-image:linear-gradient(180deg,rgba(var(--veil2),.10) 0%,rgba(var(--veil2),.50) 40%,rgba(var(--veil2),.97) 76%),var(--hero-image-m,none);
     background-position:center top}
 }
-#guide .copy{width:min(100%,600px);text-shadow:0 2px 12px rgba(0,0,0,.85)}
+#guide .copy{width:100%;max-width:600px;text-shadow:0 2px 12px rgba(0,0,0,.85)}
 #guide .kicker{font-size:12px;color:var(--gold);margin-bottom:7px;letter-spacing:2px}
 #guide h2{font-size:30px;line-height:1.2;margin-bottom:10px}
 #guide .lead{font-size:16px;line-height:1.75;color:var(--txt2);margin-bottom:14px}
@@ -261,10 +261,10 @@ button.main:hover{filter:brightness(1.08);color:var(--ongold)}
 .rptband{width:100%;border-radius:8px;display:block;margin-bottom:10px;border:1px solid var(--line)}
 
 /* 弹窗 */
-.mask{position:fixed;inset:0;background:rgba(6,12,26,.82);display:none;align-items:center;justify-content:center;z-index:60;
+.mask{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(6,12,26,.82);display:none;align-items:center;justify-content:center;z-index:60;
   padding:calc(16px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left))}
 .mask.show{display:flex}
-.modal{--mpad:18px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:var(--mpad);width:min(560px,100%);
+.modal{--mpad:18px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:var(--mpad);width:100%;max-width:560px;
   max-height:88vh;max-height:88dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
   position:relative;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .modal h2{font-size:17px;color:var(--gold);margin-bottom:10px}
@@ -295,7 +295,7 @@ button.main:hover{filter:brightness(1.08);color:var(--ongold)}
 .cert .sub{font-size:13px;color:var(--dim)}
 
 /* 结局 */
-#endScreen{position:fixed;inset:0;display:none;z-index:70;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+#endScreen{position:fixed;top:0;right:0;bottom:0;left:0;display:none;z-index:70;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
   padding:calc(24px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));background:var(--bg3)}
 #endScreen.show{display:block}
 .endcard{max-width:620px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px}
@@ -464,9 +464,25 @@ button.main:hover{filter:brightness(1.08);color:var(--ongold)}
 
 .pm-ui .tabs button:not(.on):hover{border-color:transparent;background:var(--panel2)}
 
+/* The management screen is usable only after the main script has finished. */
+html:not([data-boot="ready"]) #app{visibility:hidden;pointer-events:none}
+#bootLoading{position:fixed;top:0;right:0;bottom:0;left:0;z-index:90;overflow:auto;background:#eef1f7;color:#25334e;padding:24px}
+#bootLoading .loading-card{max-width:520px;margin:16vh auto;padding:28px;background:#fff;border:1px solid #c5cede;border-top:5px solid #25365e;border-radius:5px}
+#bootLoading h2{font-size:24px;color:#25365e;margin-bottom:16px}
+#bootLoading p{line-height:1.8}
+#bootLoadingActions{margin-top:20px}
+#bootLoadingActions button{margin:4px 6px 4px 0;min-height:44px}
+html[data-boot="ready"] #bootLoading,html[data-boot="error"] #bootLoading{display:none}
+
 </style>
 </head>
 <body class="pm-ui">
+
+<section id="bootLoading" role="status" aria-live="polite" aria-label="正在载入游戏">
+  <div class="loading-card"><h2>正在载入渝江证券</h2><p id="bootLoadingMessage">首次打开时需要载入游戏和图片，请稍候。</p>
+    <div id="bootLoadingActions" hidden><button onclick="location.reload()">重新载入</button><button onclick="showSaveTools()">存档导入 / 导出</button></div>
+  </div>
+</section>
 
 <section id="guide" aria-label="开场说明">
   <div class="inner"><div class="copy">
@@ -486,7 +502,7 @@ button.main:hover{filter:brightness(1.08);color:var(--ongold)}
   </div></div>
 </section>
 
-<div id="app">
+<div id="app" inert>
   <div class="hdr">
     <div class="top">
       <h1>渝江证券<small>江北嘴 · 总经理办公室</small></h1>
@@ -570,7 +586,14 @@ button.main:hover{filter:brightness(1.08);color:var(--ongold)}
 </section>
 <script type="text/javascript">
 (function(){
+  var slowBootTimer;
+  function showSlowBoot(){
+    if(document.documentElement.getAttribute('data-boot')!=='loading')return;
+    document.getElementById('bootLoadingMessage').textContent='页面还没有载入完整。可以继续等待，或重新载入。现有进度仍保存在浏览器中。';
+    document.getElementById('bootLoadingActions').hidden=false;
+  }
   window.reportBootFailure=function(message){
+    clearTimeout(slowBootTimer);
     document.documentElement.setAttribute('data-boot','error');
     var box=document.getElementById('bootError');if(box)box.hidden=false;
     if(message)document.getElementById('bootMessage').textContent=message;
@@ -578,6 +601,12 @@ button.main:hover{filter:brightness(1.08);color:var(--ongold)}
   window.addEventListener('error',function(event){
     if(document.documentElement.getAttribute('data-boot')!=='ready' && !event.target.tagName)window.reportBootFailure();
   });
+  window.addEventListener('load',showSlowBoot);
+  slowBootTimer=setTimeout(showSlowBoot,20000);
+  window.finishGameBoot=function(){
+    clearTimeout(slowBootTimer);
+    document.documentElement.setAttribute('data-boot','ready');
+  };
 })();
 (function(){
   var pending=null,readVersion=0,previousFocus=null,previousOverflow='',BACKUP_KEY='yjzq_import_backup';
@@ -8287,7 +8316,11 @@ function showIntro(){
 
 本月有3点精力。行情种子：${S.seed}`, [{t:'先看看公司的账'}]);
 }
-function startFromGuide(){ const term=Number($("#termSelect").value);$("#guide").classList.remove("show"); newGame(null,null,null,term); }
+function startFromGuide(){
+  const term=Number($("#termSelect").value);
+  newGame(null,null,null,term);
+  $("#guide").classList.remove("show");
+}
 function guideChallenge(){ $("#guide").classList.remove("show"); showChallengePicker(); }
 function askRestart(){
   showModal("重开一局", "当前进度会清掉，重新生成一轮牛熊。", [
@@ -8583,6 +8616,7 @@ if(typeof document!=='undefined'){
  const sync=()=>{const showing=mask.classList.contains('show'),saving=!document.querySelector('#saveTools').hidden;document.querySelector('#app').inert=saving||showing||document.querySelector('#guide').classList.contains('show')||document.querySelector('#endScreen').classList.contains('show');if(saving){if(!document.querySelector('#saveTools').contains(document.activeElement))document.querySelector('#saveTitle').focus();return;}if(showing){if(!mask.contains(document.activeElement))previous=document.activeElement;document.querySelector('#mTitle').focus({preventScroll:true});}else if(previous&&previous.isConnected){previous.focus({preventScroll:true});previous=null;}};
  for(const el of [mask,document.querySelector('#guide'),document.querySelector('#endScreen')])new MutationObserver(sync).observe(el,{attributes:true,attributeFilter:['class']});
  new MutationObserver(sync).observe(document.querySelector('#saveTools'),{attributes:true,attributeFilter:['hidden']});
+ new MutationObserver(sync).observe(document.documentElement,{attributes:true,attributeFilter:['data-boot']});
  document.addEventListener('keydown',e=>{if(e.key!=='Tab'||!mask.classList.contains('show'))return;const list=[...mask.querySelectorAll('button:not(:disabled),input,select,summary')].filter(x=>x.getClientRects().length),first=list[0],last=list[list.length-1];if(!first)return;if(e.shiftKey&&(document.activeElement===first||!list.includes(document.activeElement))){e.preventDefault();last.focus();}else if(!e.shiftKey&&(document.activeElement===last||!list.includes(document.activeElement))){e.preventDefault();first.focus();}});
 }
 /* ============ 启动 ============ */
@@ -8653,7 +8687,7 @@ if(typeof document!=="undefined"){
     const c=$("#guideChal"); if(c) c.style.display="block"; }
   window.guideChallenge = guideChallenge;
   if(!load() && document.documentElement.getAttribute('data-boot')!=='error') $("#guide").classList.add("show");
-  if(document.documentElement.getAttribute('data-boot')!=='error')document.documentElement.setAttribute('data-boot','ready');
+  if(document.documentElement.getAttribute('data-boot')!=='error')window.finishGameBoot();
 }
 </script>
 </body>
