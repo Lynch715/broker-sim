@@ -928,7 +928,7 @@ const BALANCE = {
         trustPer:0.00022,        // (口碑-50) × 该系数 × aum
         rivalDrain:0.0022 },
 
-  outlet:{ perStar:260, decoMul:0.15, rampStep:0.25, openCost:2800, openMonths:2 },
+  outlet:{ perStar:260, decoMul:0.15, rampStep:0.25, openCost:2800, openMonths:2, maxCount:12 },
 
   cost:{ hq:150, branchPerStar:7, perEmpTeam:9, sysPerLevel:25, sysUpgrade:[0,1800,4500], fundRate:0.005/12 },
 
@@ -991,6 +991,12 @@ const OUTLET_POOL = [
   {id:"jbz", name:"江北嘴营业部", star:5, rent:20, cost:4200, desc:"金融城旗舰店，面子工程，机构客户"},
   {id:"np",  name:"南坪营业部",   star:3, rent:7,  cost:1800, desc:"老小区，退休金炒股的多"},
   {id:"wz",  name:"万州营业部",   star:2, rent:4,  cost:1100, desc:"下沉市场，没竞争，也没量"},
+  {id:"yjp", name:"杨家坪营业部", star:3, rent:6,  cost:1600, desc:"九龙坡老工业区，退休工人多，定投扣款稳"},
+  {id:"yb",  name:"渝北空港营业部", star:3, rent:8, cost:2000, desc:"临空产业园，企业主多，两融需求旺"},
+  {id:"bb",  name:"北碚营业部",   star:2, rent:4,  cost:1000, desc:"温泉和高校，开户慢，客户黏"},
+  {id:"fl",  name:"涪陵营业部",   star:2, rent:4,  cost:1100, desc:"上市公司老板就在本地，人情比佣金好使"},
+  {id:"yc",  name:"永川营业部",   star:2, rent:3,  cost:900,  desc:"职教城，资产少，流失也少"},
+  {id:"cdgx",name:"成都高新营业部", star:4, rent:16, cost:3600, desc:"出川第一站，同业扎堆，抢人也抢客户"},
 ];
 const DECO_NAME = ["普通大厅","VIP 大户室","私人银行级"];
 const DECO_COST = [0, 550, 1600];
@@ -1148,12 +1154,15 @@ Object.assign(BALANCE, {
   margin2:{
     unlockMonth:6, unlockGrade:"BBB",
     levels:[
-      {nm:"保守", cap:0.030, risk:0, desc:"担保品折算从严，爆仓少"},
-      {nm:"标准", cap:0.055, risk:1, desc:"跟同业一样"},
-      {nm:"激进", cap:0.090, risk:2.5, desc:"折算率放宽，规模冲上去"},
+      {nm:"保守", cap:0.030, risk:0, loss:0.5, desc:"担保品折算从严，爆仓少"},
+      {nm:"标准", cap:0.055, risk:1, loss:0.8, desc:"跟同业一样"},
+      {nm:"激进", cap:0.090, risk:2.5, loss:1.5, desc:"折算率放宽，规模冲上去"},
     ],
     gradeBonus:{AAA:1.5, AA:1.5, A:1.5, BBB:1, BB:0, B:0, CCC:0, CC:0, C:0, D:0},
-    crashLoss:0.32,
+    crashLoss:0.10,          // 强平事件里一次性穿仓的比例（事件选项再乘各自系数）
+    gapFloor:0.08,           // 当月跌幅超过这条线，平仓来不及，才开始穿仓
+    gapK:1.0, gapMax:0.25,   // 穿仓率 = (跌幅 − gapFloor) × gapK × 政策系数，单月封顶
+    naturalLoss:0.6,         // 没开业务时只有存量信用账户，客户多是老户，平仓配合度高
   },
   research:{ cost:1800, perStar:70, upCost:550, monthly:90 },
   talent:{ pointPerScore:0.12, pointPerNewEnding:2, pointPerNewAch:1 },
@@ -2105,9 +2114,10 @@ function actProp(){
 /* ----  扩张 ---- */
 function actExpand(){
   if(needEnergy()) return;
-  const canOpen = S.outlets.length<6 && S.grade!=="BB" && S.grade!=="B" && S.grade!=="C";
+  const full = S.outlets.length>=BALANCE.outlet.maxCount;
+  const canOpen = !full && S.grade!=="BB" && S.grade!=="B" && S.grade!=="C";
   const opts = [];
-  opts.push({t:"开营业部", s: canOpen ? "看看还有哪些点位" : "评级 BB 以下不得新开营业部", disabled:!canOpen, fn:()=>showOpenOutlet()});
+  opts.push({t:"开营业部", s: canOpen ? `看看还有哪些点位（最多 ${BALANCE.outlet.maxCount} 家）` : (full ? `已经 ${BALANCE.outlet.maxCount} 家，总部管不过来了` : "评级 BB 以下不得新开营业部"), disabled:!canOpen, fn:()=>showOpenOutlet()});
   const lv = S.sysLevel;
   if(lv<3){
     const cost = BALANCE.cost.sysUpgrade[lv];
@@ -2121,7 +2131,7 @@ function actExpand(){
   else opts.push({t:`挖研究员（研究所 ${S.labStar} 星）`, s:S.labStar>=5?"已经满星":`现金-${BALANCE.research.upCost*(S.labStar+1)}万，分仓每月+${BALANCE.research.perStar}万`, disabled:S.labStar>=5, fn:()=>upgradeLab()});
   opts.push({t:"发债融资", s: (S.bonds||[]).length ? `已发 ${wanTxt(bondDebt())}，月息 ${bondInterest()}万` : "借钱进来，两融和自营都要本钱", fn:()=>showBond()});
   opts.push({t:"← 返回"});
-  showModal("扩张", `账上现金 ${wanTxt(S.cash)}（六个月固定开支 ${wanTxt(sixMonthCost())}）。当前营业部 ${S.outlets.length} 家，交易系统 ${S.sysLevel} 级。`, opts);
+  showModal("扩张", `账上现金 ${wanTxt(S.cash)}（六个月固定开支 ${wanTxt(sixMonthCost())}）。当前营业部 ${S.outlets.length}/${BALANCE.outlet.maxCount} 家，交易系统 ${S.sysLevel} 级。`, opts);
 }
 function showOpenOutlet(){
   const have = S.outlets.map(o=>o.id);
@@ -2744,22 +2754,21 @@ function marginUnlocked(){
   return S.month>=BALANCE.margin2.unlockMonth &&
          ord.indexOf(S.grade) <= ord.indexOf(BALANCE.margin2.unlockGrade);
 }
+// 融出去的是真金白银：账上留够六个月开支，剩下的才能融。发债的钱已经在现金里了。
+function marginFundable(){ return Math.max(0, (S.cash||0) - sixMonthCost()); }
 function marginCap(){
-  if(!S.marginOn) return BALANCE.margin.penetration[moodBand()];   // 没开业务，只有散户自然渗透
+  const fundable = marginFundable() / Math.max(1, S.aum);
+  if(!S.marginOn) return Math.min(BALANCE.margin.penetration[moodBand()], fundable);   // 没开业务，只有存量信用账户
   const lv = BALANCE.margin2.levels[S.marginLv];
   const bonus = BALANCE.margin2.gradeBonus[S.grade] !== undefined ? BALANCE.margin2.gradeBonus[S.grade] : 1;
-  const policy = lv.cap * bonus;
-  // 融出去的是真金白银：账上留够六个月开支，剩下的才能融。发债的钱已经在现金里了。
-  const fundable = Math.max(0, (S.cash||0) - sixMonthCost()) / Math.max(1, S.aum);
-  return Math.min(policy, fundable);
+  return Math.min(lv.cap * bonus, fundable);
 }
 // 资金卡住了没有：政策还能放，但账上没钱
 function marginTight(){
   if(!S.marginOn) return false;
   const lv = BALANCE.margin2.levels[S.marginLv];
   const bonus = BALANCE.margin2.gradeBonus[S.grade] !== undefined ? BALANCE.margin2.gradeBonus[S.grade] : 1;
-  const fundable = Math.max(0, (S.cash||0) - sixMonthCost()) / Math.max(1, S.aum);
-  return fundable < lv.cap * bonus;
+  return marginFundable() / Math.max(1, S.aum) < lv.cap * bonus;
 }
 function actMarginSet(){
   if(!marginUnlocked()){
@@ -2784,7 +2793,7 @@ function actMarginSet(){
   }});
   opts.push({t:"← 返回"});
   showModal("两融额度",
-    `当前余额 ${wanTxt(S.margin)}，利息 ${(BALANCE.margin.rate*100).toFixed(0)}%/年、资金成本 ${(BALANCE.margin.cost*100).toFixed(0)}%/年。\n评级 ${S.grade}${BALANCE.margin2.gradeBonus[S.grade]>1?"（A 以上额度 ×1.5）":""}\n\n股灾里，余额越大，穿仓赔得越多。`,
+    `当前余额 ${wanTxt(S.margin)}，利息 ${(BALANCE.margin.rate*100).toFixed(0)}%/年。融出去的是账上现金，留足六个月开支后还能融 ${wanTxt(marginFundable())}。\n评级 ${S.grade}${BALANCE.margin2.gradeBonus[S.grade]>1?"（A 以上额度 ×1.5）":""}\n\n单月大跌超过 ${(BALANCE.margin2.gapFloor*100).toFixed(0)}% 才会穿仓，跌得越深、政策越松，赔得越多。`,
     opts);
 }
 
@@ -2913,6 +2922,7 @@ function settleCore(){
   /* 1.5 两融余额：没开业务是散户自然渗透，开了业务按额度政策走 */
   const tgtMargin = Math.round(S.aum * Math.min(marginCap(), BALANCE.margin.penetration[moodBand()]*3 + 0.005));
   S.margin = Math.round(S.margin + (tgtMargin - S.margin)*BALANCE.margin.adjust);
+  S.margin = Math.min(S.margin, Math.round(marginFundable()));   // 现金不够就当月收回，不能凭空放贷
   if(phase==="crash") S.margin = Math.round(S.margin*0.82);
 
   /* 2. 收入 */
@@ -3065,10 +3075,13 @@ function settleCore(){
   S.flags.bizThisMonth = false;
   S.trustSum += S.trust; S.trustN = (S.trustN||1)+1;
   if(S.marginOn) gain("risk", BALANCE.margin2.levels[S.marginLv].risk);
-  if(phase==="crash" && S.margin>0){
-    const hole = Math.round(S.margin*BALANCE.margin2.crashLoss*(S.marginOn?(1+S.marginLv*0.4):0.5));
+  if(S.margin>0 && ret < -BALANCE.margin2.gapFloor){
+    const M2 = BALANCE.margin2;
+    const pol = S.marginOn ? M2.levels[S.marginLv].loss : M2.naturalLoss;
+    const hole = Math.round(S.margin * Math.min(M2.gapMax, (-ret - M2.gapFloor)*M2.gapK*pol));
     if(hole>0){ gain("cash",-hole); S.profitCum -= hole; lines.push(["两融穿仓损失", `-${hole}万`]);
-      S.track.marginHole = (S.track.marginHole||0)+hole; S.track.crashHole = (S.track.crashHole||0)+hole; }
+      S.margin = Math.max(0, S.margin - hole);   // 穿掉的贷款核销，不再计息，也不会下个月再穿一次
+      S.track.marginHole = (S.track.marginHole||0)+hole; if(phase==="crash") S.track.crashHole = (S.track.crashHole||0)+hole; }
   }
   // 风险同样是回归型：风控星压得住，但压不到零；两融和满仓会把均衡位抬上去
   gain("risk", ((BALANCE.riskBase - (S.flags.routeSt?4:0) - (S.flags.monitorSys?3:0)) - S.risk)*0.08 + 0.4 - Math.min(1.2, roamRk*0.12)
@@ -7150,7 +7163,7 @@ function renderForecast(){
   const to = turnover();
   const broker = Math.round(S.aum*to*feeRate());
   const fund = Math.round(S.fundHold*BALANCE.cost.fundRate);
-  const mi = Math.round(S.margin*0.08/12);
+  const mi = Math.round(S.margin*BALANCE.margin.rate/12);
   const cost = fixedCostMonthly() + bondInterest();
   const service=LONG_PROJECTS.reduce((v,p)=>v+projectQuote(p,businessState().levels[p.id]||0).income,0);
   const net = Math.round(broker+fund+mi+labIncome()+service-cost);
@@ -7368,7 +7381,9 @@ function renderAll(){
 }
 /* ============ P2 数值追加 ============ */
 Object.assign(BALANCE, {
-  poach:{ cost:[0,230,380,610,880,1260], moraleHit:3, riskHit:2 },
+  poach:{ cost:[0,230,380,610,880,1260], moraleHit:3, riskHit:2,
+          // 挖来的人带的是自己手上的客户，跟渝江多大没关系：1~5 星约 0.8~5 亿，到账浮动 ±20%
+          book:[0,8000,15000,24000,35000,50000], deposit:0.3, weakMul:1, hardMul:1.4 },
   takeover:{ cost:2400, star:5, rent:16 },
 });
 
@@ -7636,18 +7651,18 @@ ${S.flags.ssCollateral
    const cost = S.flags.ssCollateral ? Math.round(BALANCE.takeover.cost*0.4) : BALANCE.takeover.cost;
    const opts = [
      {t:"接收营业部", s:`现金-${cost}万，多一家五星营业部 + 客户资产`,
-      disabled: S.cash<cost || S.outlets.length>=6, fn:()=>{
+      disabled: S.cash<cost || S.outlets.length>=BALANCE.outlet.maxCount, fn:()=>{
         gain("cash",-cost);
         const taken = S.outlets.some(o=>o.id==="jbz") ? "大坪营业部（原山城）" : "江北嘴营业部（原山城）";
         S.outlets.push({id:"ssjb", name:taken, star:BALANCE.takeover.star,
           rent:BALANCE.takeover.rent, mgr:null, deco:1, ramp:0.5, building:0, aum:0,
           desc:"从山城资本接过来的，人和客户一起来的"});
-        inflow(Math.round(S.aum*0.09),"接收山城资本客户");
+        inflow(Math.min(Math.round(S.aum*0.09), 280000),"接收山城资本客户");   // 对方托管前四十亿，人和店一起来，最多留住七成
         gain("trust",3); S.track.takeover = 1;
         log("good", `<b>${taken}完成交割。</b>现金-${cost}万，客户资产大增。原来的二十三个员工留下了十七个，其余的领了补偿金走人。<span style="color:var(--dim)">交接那天，对方派来的人一句话没说，把钥匙和账册放在桌上就走了。<br>冉建国在那家店待了一个月，带着新来的团队一个一个客户回访。他说这一个月比他过去三年都累。口碑+3。</span>`, true);
       }},
      {t:"只接客户，不接人", s:"客户资产+，现金-600万", disabled:S.cash<600, fn:()=>{
-        gain("cash",-600); inflow(Math.round(S.aum*0.045),"接收山城资本客户");
+        gain("cash",-600); inflow(Math.min(Math.round(S.aum*0.045), 140000),"接收山城资本客户");  // 只买名单，留得住的更少
         log("good","只买了客户名单和迁移服务，六百万，不接人也不接场地。<b>客户资产接过来一批。</b><span style='color:var(--dim)'>问题是这批客户认的是原来那些客户经理，不是渝江。三个月之内又走了三分之一。<br>便宜有便宜的道理。</span>", true); }},
      {t:"不接", s:"什么也不做", fn:()=>{
         log("","你没有报名。理由是现在的现金流不支持再开一家五星店，接过来养不活。<b>公司这边没有任何动作。</b><span style='color:var(--dim)'>后来是华渝接的。他们接手八个月之后把那家店缩到了一层。</span>", true); }},
@@ -7752,24 +7767,28 @@ function actPoach(){
   const opts = [];
   for(const r of S.rivals){
     const weak = r.blown || r.heat===0;
-    opts.push({t:`从${r.name}挖人`, s:`现金-${cost}万 · ${weak?"他们最近不太平，好挖":"他们防得紧，价钱要往上加"}`,
-      disabled:S.cash<cost,
+    const price = Math.round(cost*(weak?BALANCE.poach.weakMul:BALANCE.poach.hardMul));
+    opts.push({t:`从${r.name}挖人`, s:`现金-${price}万（谈不成只损失三成定金）· ${weak?"他们最近不太平，好挖":"他们防得紧，价钱要往上加"}`,
+      disabled:S.cash<price,
       fn:()=>{
-        spend(); gain("cash", -cost*(weak?1:1.4));
+        spend();
         const ok = RNG() < (weak?0.85:0.55) + (S.trust-50)*0.004;
+        const paid = ok ? price : Math.round(price*BALANCE.poach.deposit);
+        gain("cash", -paid);
         if(ok){
           const nm = pick(EMP_NAMES.filter(n=>!S.emps.some(x=>x.name===n))) || ("新人"+S.empSeq);
           const e = {id:S.empSeq++, name:nm, mk:Math.min(5,lv+1), mg:clamp(lv,1,5), rk:clamp(lv-1,1,5),
                      flavor:`从${r.name}挖过来的，客户名单还热着`, trait:pick(TRAIT_IDS), fatigue:0};
           e.salary = +(salaryOf(e)*1.25).toFixed(1);
           S.emps.push(e);
-          inflow(Math.round(S.aum*0.006*lv), "挖来的客户");
+          const book = Math.round(BALANCE.poach.book[lv]*rnd(0.8,1.2));
+          inflow(book, "挖来的客户");
           gain("risk", BALANCE.poach.riskHit);
           r.heat = Math.max(0, (r.heat||0)-1);
-          log("good", `<b>${nm}从${r.name}过来了。</b>带来一批客户。月薪 ${e.salary}万，风险+${BALANCE.poach.riskHit}。`, true);
+          log("good", `<b>${nm}从${r.name}过来了。</b>带来客户资产 ${wanTxt(book)}。现金-${paid}万，月薪 ${e.salary}万，风险+${BALANCE.poach.riskHit}。`, true);
         } else {
           gain("morale", -BALANCE.poach.moraleHit);
-          log("bad", `${r.name}那边临门反悔，对方加了钱。定金打了水漂，士气-${BALANCE.poach.moraleHit}。`);
+          log("bad", `${r.name}那边临门反悔，对方加了钱。定金 ${paid}万打了水漂，士气-${BALANCE.poach.moraleHit}。`);
         }
         afterAct();
       }});
@@ -8543,7 +8562,8 @@ function businessState(){
  const c=S.business||(S.business={});
  for(const k of ['levels','modes','changed','ledger'])if(!c[k]||typeof c[k]!=='object')c[k]={};
  if(!Array.isArray(c.history))c.history=[];
- if(c.active===undefined)c.active=null;
+ if(!Array.isArray(c.builds))c.builds=[];
+ if(c.active){c.builds.push(c.active);}c.active=null;   // 旧档只有一个建设槽，读进来并入队列
  if(c.mandate===undefined)c.mandate=null;
  return c;
 }
@@ -8553,13 +8573,15 @@ function projectQuote(p,level,mode){
  const income=Math.round(p.fee*level*m.fee*factor),cost=(p.upkeep+m.cost)*level;
  return {income,cost,net:income-cost,flow:Math.round(p.flow*level*m.flow*factor),risk:m.risk*level};
 }
+const BUILD_TEAMS=2;   // 两支建设团队，可以同时筹建两项（同一项一次只升一级）
 function businessCost(){return LONG_PROJECTS.reduce((v,p)=>v+projectQuote(p,businessState().levels[p.id]||0).cost,0);}
 function projectReason(p){
  const c=businessState(),level=c.levels[p.id]||0;
  if(S.over)return '任期已结束';
  if(S.month<p.month)return `第${yearOf(p.month)}年可开办`;
  if(level>=3)return '已建至3级';
- if(c.active)return '建设团队正在忙';
+ if(c.builds.some(b=>b.id===p.id))return '正在筹建';
+ if(c.builds.length>=BUILD_TEAMS)return '两支建设团队都在忙';
  if(p.lab&&!S.lab)return '需要先建研究所';
  if(GRADE_HARD.includes(S.grade))return '先恢复业务资格';
  if(S.month+p.time>=endM())return '剩余任期来不及投产';
@@ -8570,7 +8592,7 @@ function projectReason(p){
 function buildBusiness(id){
  const p=LONG_PROJECTS.find(p=>p.id===id);if(!p||projectReason(p))return false;
  const c=businessState(),level=(c.levels[id]||0)+1,cost=p.cost*level;
- gain('cash',-cost);S.energy--;c.active={id,level,left:p.time};
+ gain('cash',-cost);S.energy--;c.builds.push({id,level,left:p.time});
  if(!c.ledger[id])c.ledger[id]={spent:0,net:0,flow:0,since:S.month};c.ledger[id].spent+=cost;
  log('',`${p.name}开始筹建，投入${cost}万，预计${p.time}个月完成。`,true);renderAll();save();return true;
 }
@@ -8593,7 +8615,7 @@ function settleBusiness(lines){
  lines.push([p.name,`收入+${q.income}万 / 费用−${q.cost}万`]);
  if(q.risk||p.trust||p.morale)lines.push([p.name+" · 服务影响",`风险${q.risk>=0?"+":""}${q.risk.toFixed(1)}${p.trust?` / 口碑+${(p.trust*level).toFixed(1)}`:""}${p.morale?` / 士气+${(p.morale*level).toFixed(1)}`:""}`]);
  }
- if(c.active&&--c.active.left<=0){const a=c.active,p=LONG_PROJECTS.find(p=>p.id===a.id);c.levels[a.id]=a.level;c.active=null;log('good',`${p.name}筹备完成，下月开始营业。`,true);lines.push([p.name,'下月开始营业']);}
+ for(const a of c.builds.slice()){if(--a.left>0)continue;const p=LONG_PROJECTS.find(p=>p.id===a.id);c.levels[a.id]=a.level;c.builds.splice(c.builds.indexOf(a),1);log('good',`${p.name}筹备完成，下月开始营业。`,true);lines.push([p.name,'下月开始营业']);}
  return {income,cost};
 }
 const YEAR_PLANS={
@@ -8616,14 +8638,14 @@ function settleYearPlan(pnl,lines){
 }
 function panelBusiness(){
  const c=businessState(),m=c.mandate;
- let h=`<div class="career-head"><div class="eyebrow">经营手记 / 第${yearOf(S.month)}年</div><h2>${S.month<=36?'先站稳脚跟':S.month<=72?'做出自己的长处':'把生意交给团队'}</h2><p>行情有起落，能留下的客户和手艺才是自己的。</p><details><summary>建设费用与回款</summary>每次开工花1点精力，同时建设一项，每项最多3级。升级期间原有业务照常经营。新增客户资产不进入公司现金；公司只收服务收入，再付运营费用。投入后需留足六个月固定开支。</details></div>`;
+ let h=`<div class="career-head"><div class="eyebrow">经营手记 / 第${yearOf(S.month)}年</div><h2>${S.month<=36?'先站稳脚跟':S.month<=72?'做出自己的长处':'把生意交给团队'}</h2><p>行情有起落，能留下的客户和手艺才是自己的。</p><details><summary>建设费用与回款</summary>每次开工花1点精力，两支建设团队可同时筹建两项（同一项一次升一级），每项最多3级。升级期间原有业务照常经营。新增客户资产不进入公司现金；公司只收服务收入，再付运营费用。投入后需留足六个月固定开支。</details></div>`;
  h+=`<div class="card"><h3>${svgIcon('target')} 年度经营重点</h3>`;
  if(S.chal)h+='<p>挑战局按原目标考核。</p>';
  else if(m){const value=m.id==='clients'?`净流入 ${wanTxt(S.netInflow-m.flow)} / ${wanTxt(m.target)}`:m.id==='profit'?`月报损益 ${wanTxt(m.pnl)} / 1200万`:`口碑 ${Math.round(S.trust)}/65 · 风险 ${Math.round(S.risk)}/35 · 新增罚单 ${S.fines-m.fines}`;h+=`<p>${YEAR_PLANS[m.id].name} · ${value}</p><p class="sub">第${m.year}年12月考核。达标：经营资金+800万、董事长好感+6、士气+4；未达：好感−4。</p>`;}
  else if(monOf(S.month)<=3)h+=`<p>今年先抓哪件事？选定花1点精力，年底交账；也可以不立目标。</p><div class="plan-options">${Object.entries(YEAR_PLANS).map(([id,p])=>`<button onclick="selectYearPlan('${id}')" ${S.energy<1?'disabled':''}><b>${p.name}</b><small>${p.desc}</small></button>`).join('')}</div><p class="sub">达标获经营资金800万、董事长好感+6、士气+4；未达好感−4。${S.energy<1?'本月精力不足。':''}</p>`;
  else h+='<p>今年未立专项目标。明年一季度再安排。</p>';
  h+='</div>';
- if(c.active)h+=`<p class="build-status">${LONG_PROJECTS.find(p=>p.id===c.active.id).name}筹建中 · 还需${c.active.left}个月</p>`;
+ for(const b of c.builds)h+=`<p class="build-status">${LONG_PROJECTS.find(p=>p.id===b.id).name}升${b.level}级筹建中 · 还需${b.left}个月</p>`;
  for(const p of LONG_PROJECTS){const level=c.levels[p.id]||0,q=projectQuote(p,level||1),a=c.ledger[p.id],reason=projectReason(p);h+=`<div class="card project-card"><div class="row"><h3>${svgIcon(p.icon)} ${p.name}</h3><span class="tag">${level?level+'级 · '+(OPERATING_MODES[c.modes[p.id]]||OPERATING_MODES.steady).name:'尚未开办'}</span></div><p>${p.desc}</p><div class="project-return"><span>${level?'全项目本月预计':'1级按当前行情预计'}</span><strong>净收入 ${q.net}万 <small>/ 月</small></strong><span>服务收入 ${q.income}万 − 运营费用 ${q.cost}万</span><span>客户资产 +${wanTxt(q.flow)} · 风险 ${q.risk>=0?'+':''}${q.risk.toFixed(1)}${p.trust?` · 口碑+${(p.trust*(level||1)).toFixed(1)}`:""}${p.morale?` · 士气+${(p.morale*(level||1)).toFixed(1)}`:""}</span></div>${a?`<p class="sub">累计投入 ${wanTxt(a.spent)} · 经营净收入 ${wanTxt(a.net)}<br>自第${yearOf(a.since)}年${monOf(a.since)}月记账 · 客户资产净流入 ${wanTxt(a.flow)}</p>`:''}<div class="cardbtns"><button onclick="buildBusiness('${p.id}')" ${reason?'disabled':''}>${level>=3?'已建至3级':`${level?'升级':'筹建'} · ${p.cost*(level+1)}万 · ${p.time}个月`}</button>${level?`<button onclick="chooseOperatingMode('${p.id}')">调整经营 · 1精力</button>`:''}</div><p class="sub">${reason||'开工需1点精力'}</p></div>`;}
  if(c.history.length)h+=`<div class="card"><h3>历年交账</h3>${c.history.map(x=>`<p>第${x.year}年 · ${YEAR_PLANS[x.id].name} · ${x.success?'已达成':'未达成'}</p>`).join('')}</div>`;
  return h;
