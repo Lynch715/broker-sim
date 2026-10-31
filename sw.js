@@ -2,7 +2,7 @@
  * 页面（HTML）：有缓存先给缓存，同时后台取新版，下次打开生效；没有缓存就走网络。
  * 美术（assets/，文件名带内容摘要）：缓存优先，永不过期。
  * 其他同源文件：先网络，失败回落缓存。 */
-var VERSION = '7aab9e391f';
+var VERSION = '85d99fe06f';
 var CACHE = 'yjzq-' + VERSION;
 var CORE = ["index.html", "manifest.webmanifest", "icon-32.png", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png"];
 var ASSETS = [

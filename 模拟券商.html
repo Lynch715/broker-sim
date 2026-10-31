@@ -8721,8 +8721,76 @@ function panelBusiness(){
  if(c.history.length)h+=`<div class="card"><h3>历年交账</h3>${c.history.map(x=>`<p>第${x.year}年 · ${YEAR_PLANS[x.id].name} · ${x.success?'已达成':'未达成'}</p>`).join('')}</div>`;
  return h;
 }
+let gameUpdateBusy = false;
+function gameUpdateTimeout(promise,ms){
+ return new Promise((resolve,reject)=>{
+  const timer=setTimeout(()=>reject(new Error('下载超时，请检查网络后重试。')),ms||30000);
+  Promise.resolve(promise).then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});
+ });
+}
+function waitForGameWorker(worker){
+ if(!worker||worker.state==='activated')return Promise.resolve();
+ return new Promise((resolve,reject)=>{
+  const timer=setTimeout(()=>finish(new Error('离线资源更新超时，请稍后重试。')),30000);
+  function finish(error){clearTimeout(timer);worker.removeEventListener('statechange',check);error?reject(error):resolve();}
+  function check(){if(worker.state==='activated')finish();else if(worker.state==='redundant')finish(new Error('离线资源没有下载完整，请检查网络后重试。'));}
+  worker.addEventListener('statechange',check);check();
+ });
+}
+function reopenUpdatedGame(url){ location.replace(url); }
+async function pullGameUpdate(){
+ if(gameUpdateBusy)return false;
+ if(resolvingMonth||MQ.length)return false;
+ if(!/^https?:$/.test(location.protocol)||typeof fetch!=='function'){
+  showModal('暂时无法自动更新','请使用浏览器打开在线游戏后，再拉取更新。本地文件需要重新下载。',[{t:'返回设置',fn:showSettings}]);return false;
+ }
+ gameUpdateBusy=true;
+ let progressSaved=false;
+ try{
+  if(S&&!S.over){
+   S.rngState=RNG_STATE;
+   const raw=JSON.stringify(S);
+   localStorage.setItem('yjzq_save',raw);
+   if(localStorage.getItem('yjzq_save')!==raw)throw new Error('进度未能完整保存。请先导出存档，再重试更新。');
+  }
+  progressSaved=true;
+  showModal('正在拉取更新','正在联网下载最新游戏，完成后会重新打开。当前进度已保存。',[{t:'正在下载，请稍候',disabled:true}]);
+  const entry=new URL(location.href);entry.search='';entry.hash='';
+  if(entry.pathname.slice(-1)==='/')entry.pathname+='index.html';
+  const request=new URL(entry.href);request.searchParams.set('__yjzq_update',String(Date.now()));
+  const downloaded=await gameUpdateTimeout(fetch(request.href,{cache:'no-store'}).then(async response=>{
+   if(!response.ok)throw new Error('服务器暂时无法提供更新，请稍后重试。');
+   const html=await response.clone().text();
+   if(!/<html[\s>]/i.test(html)||!/<\/html\s*>/i.test(html)||html.indexOf('yjzq_save')<0||html.indexOf('BrokerGame')<0)throw new Error('下载的游戏页面不完整，请稍后重试。');
+   return response;
+  }));
+  if('serviceWorker' in navigator){
+   const registration=await gameUpdateTimeout(navigator.serviceWorker.getRegistration(entry.href).then(reg=>reg||navigator.serviceWorker.register(new URL('sw.js',entry.href).href)));
+   await gameUpdateTimeout(registration.update());
+   await waitForGameWorker(registration.installing||registration.waiting);
+  }
+  // 同步当前页面缓存，让仍由旧离线脚本控制的页面也能一次打开最新版。
+  // 只写本游戏的代码缓存，不清除存档、图鉴或其他应用的数据。
+  if(typeof caches!=='undefined'){
+   const keys=await caches.keys();
+   for(const key of keys.filter(k=>k.indexOf('yjzq-')===0)){
+    const cache=await caches.open(key);await cache.put(entry.href,downloaded.clone());
+   }
+  }else if('serviceWorker' in navigator&&navigator.serviceWorker.controller){
+   throw new Error('浏览器暂时无法写入更新缓存，请稍后重试。');
+  }
+  if(resolvingMonth||MQ.length)throw new Error('有新的事项等待处理，请处理完后再更新。');
+  reopenUpdatedGame(request.href);return true;
+ }catch(error){
+  const detail=error&&error.message||'';
+  const message=/[\u4e00-\u9fff]/.test(detail)?detail:'请检查网络和浏览器存储空间后重试，也可以先导出存档备份。';
+  showModal('更新未完成',(progressSaved?'当前进度已保留。':'更新已停止，请先确认进度能够保存。')+'\n\n'+message,
+   [{t:'重试拉取更新',fn:pullGameUpdate},{t:'导出存档备份',fn:showSaveTools},{t:'返回游戏'}]);
+  return false;
+ }finally{gameUpdateBusy=false;}
+}
 function showSettings(){
- const opts=[{t:'存档导入 / 导出',s:'下载备份、换设备继续，或恢复导入前的进度。',fn:showSaveTools},{t:'界面配色',fn:showSkin}];
+ const opts=[{t:'存档导入 / 导出',s:'下载备份、换设备继续，或恢复导入前的进度。',fn:showSaveTools},{t:'界面配色',fn:showSkin},{t:'拉取更新',s:resolvingMonth||MQ.length?'请先处理完当前事项，再拉取更新。':'保存当前进度，联网下载最新版并重新打开游戏。',disabled:()=>gameUpdateBusy||resolvingMonth||MQ.length>0,fn:pullGameUpdate}];
  if(S&&!S.over&&!S.chal&&endM()<120)opts.push({t:'延长至十年经营',s:'保留现有账目与已经生成的行情，补齐后续牛熊周期。',fn:()=>{extendCareer();renderAll();save();}});
  opts.push({t:'返回游戏'});
  showModal('设置与联系',`渝江证券 · 经营手记\n\nWeChat：Lynchrrr\n\n欢迎告诉我哪里不好玩，或是哪笔账出了问题。\n\n${S?'本届任期：'+endM()/12+'年。\n':''}进度保存在当前浏览器。`,opts);

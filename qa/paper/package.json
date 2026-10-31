@@ -2,7 +2,7 @@
   "name": "broker-paper-qa",
   "private": true,
   "scripts": {
-    "test": "node regression.cjs && node ui.cjs && node audit.cjs && node compat.cjs && node save-transfer.cjs && node themes.cjs && node balance-fixes.cjs && node training.cjs"
+    "test": "node regression.cjs && node ui.cjs && node audit.cjs && node compat.cjs && node save-transfer.cjs && node themes.cjs && node balance-fixes.cjs && node training.cjs && node update.cjs"
   },
   "devDependencies": {
     "acorn": "^8.15.0",
