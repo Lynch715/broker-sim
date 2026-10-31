@@ -939,7 +939,7 @@ const BALANCE = {
   // 两融：P0 里按情绪自然渗透（散户自己加杠杆），玩家可操作的两融业务 P1 开放
   margin:{ rate:0.08, penetration:{0:0, 1:0.005, 2:0.02, 3:0.05, 4:0.08}, adjust:0.35 },
 
-  emp:{ salaryPer:0.3, fatiguePerMonth:5, fatigueMgr:8, quitAt:92, quitChance:0.28 },
+  emp:{ salaryPer:0.3, fatiguePerMonth:2, fatigueMgr:4, recovery:2, restRecovery:24, quitAt:92, quitChance:0.28 },
 
   dirt:{ inspectBase:0.10, perPoint:0.06, guardFav:80, talkThreshold:6 },
 
@@ -1427,6 +1427,81 @@ function branchOps(){
 }
 function hasTrait(t){ return S.emps.some(e=>e.trait===t); }
 
+/* ============ 员工培养与状态 ============ */
+const TRAINING_COURSES = [
+  {id:'mk', name:'营销实训', effect:'提高担任主任时的营业部产出'},
+  {id:'mg', name:'管理研修', effect:'抬高团队士气基准，减轻日常倦怠'},
+  {id:'rk', name:'风控进修', effect:'增强全员生效的风险控制能力'},
+];
+function employeeTraining(e){
+  if(!e.training || typeof e.training!=='object' || Array.isArray(e.training))e.training={};
+  const t=e.training;
+  for(const key of ['mk','mg','rk'])t[key]=Number.isFinite(t[key])?clamp(Math.floor(t[key]),0,99):0;
+  if(!Number.isInteger(t.lastMonth)||t.lastMonth<0)t.lastMonth=0;
+  if(!Number.isInteger(t.count)||t.count<0)t.count=0;
+  return t;
+}
+function teamManagement(){return S.emps.length?S.emps.reduce((a,e)=>a+e.mg,0)/S.emps.length:0;}
+function monthlyFatigue(e,band=moodBand()){
+  let f=S.outlets.some(o=>!o.building&&o.mgr===e.id)?BALANCE.emp.fatigueMgr:BALANCE.emp.fatiguePerMonth;
+  if(e.trait==='wanghong')f+=2;
+  if(e.trait==='laoguming')f-=1;
+  if(S.pushMonth)f+=2;
+  if(band>=4)f+=2;
+  // 正常休息和管理能力抵消部分工作负担；轮休月额外减负。
+  f-=BALANCE.emp.recovery+clamp((teamManagement()-3)*0.5,0,1);
+  if(S.restMonth)f-=8;
+  return +(f>0?f*fatigueMul():f).toFixed(2);
+}
+function trainingQuote(e,key){
+  const course=TRAINING_COURSES.find(c=>c.id===key);
+  if(!course)return null;
+  const t=employeeTraining(e),progress=t[key]+50;
+  return {course,cost:30+e[key]*20,progress:progress>=100?0:progress,upgrade:progress>=100};
+}
+function trainingBlock(e,key){
+  if(S.over||resolvingMonth)return '当前不能安排';
+  if(employeeTraining(e).lastMonth===S.month)return '本月已培训';
+  if(key&&e[key]>=5)return '已达五星';
+  if(!key&&TRAINING_COURSES.every(c=>e[c.id]>=5))return '三项均已满星';
+  if(S.energy<1)return '本月精力不足';
+  if(key&&S.cash<trainingQuote(e,key).cost)return '现金不足';
+  return '';
+}
+function trainEmployee(eid,key){
+  const e=empById(eid);
+  if(!e||!TRAINING_COURSES.some(c=>c.id===key)||trainingBlock(e,key))return false;
+  const q=trainingQuote(e,key),t=employeeTraining(e),oldSalary=salaryOf(e);
+  spend();gain('cash',-q.cost);t[key]=q.progress;t.lastMonth=S.month;t.count++;
+  if(q.upgrade){e[key]++;e.salary=+(e.salary+salaryOf(e)-oldSalary).toFixed(1);}
+  e.fatigue=clamp((e.fatigue||0)-6,0,100);gain('morale',2);
+  log('good',`${esc(e.name)}完成「${q.course.name}」，${q.upgrade?`能力升至${e[key]}星，月薪增加0.3万`:`进度${t[key]}/100`}。现金-${q.cost}万，倦怠-6，士气+2。`);
+  afterAct();return true;
+}
+function showTraining(eid){
+  const e=empById(eid);if(!e||S.over)return;
+  const t=employeeTraining(e);
+  showModal(`${e.name} · 员工培训`, '每次消耗1点精力，每名员工每月可培训一次。两次同方向培训提升一星，上限五星；每次倦怠-6、全员士气+2。升星后月薪+0.3万。',
+    TRAINING_COURSES.map(c=>{const q=trainingQuote(e,c.id),reason=trainingBlock(e,c.id);return {
+      t:`${c.name} · ${e[c.id]}星${e[c.id]>=5?'（已满星）':` · 进度${t[c.id]}/100`}`,
+      s:`${c.effect}<br>${e[c.id]>=5?'能力已达上限':`1精力 · ${q.cost}万 · ${q.upgrade?'本次升星':'本次进度+50'}`}${reason?' · '+reason:''}`,
+      disabled:()=>!!trainingBlock(e,c.id),fn:()=>trainEmployee(eid,c.id)
+    };}).concat([{t:'← 返回员工培训',fn:()=>actTraining()}]));
+}
+function actTraining(){
+  if(S.over)return;
+  showModal('员工培训','选择员工，再安排营销、管理或风控课程。培训进度保存在员工档案中，换方向不会清空。',
+    S.emps.map(e=>({employee:e,t:e.name,s:`营${e.mk} · 管${e.mg} · 风${e.rk} · ${trainingBlock(e)||'本月可安排'}`,
+      disabled:()=>!!trainingBlock(e),fn:()=>showTraining(e.id)})).concat([{t:'← 返回'}]));
+}
+function arrangeTeamRest(){
+  if(S.over||resolvingMonth||S.restMonth||S.energy<1)return false;
+  spend();S.restMonth=true;S.track.rest++;
+  S.emps.forEach(e=>e.fatigue=clamp((e.fatigue||0)-BALANCE.emp.restRecovery,0,100));
+  gain('morale',6);
+  log('good','排了一个月轮休。全员倦怠-24，士气+6，月末额外减负，本月营业部产出打七五折。');afterAct();return true;
+}
+
 /* ============ 弹窗队列 ============ */
 const MQ = [];
 let MODAL_OPTIONS = [];
@@ -1450,7 +1525,7 @@ function decisionRows(before){
  const rows=[],add=(label,a,b,money=false)=>{if(a===b)return;const delta=+(b-a).toFixed(2);if(!Number.isFinite(delta)||!delta)return;rows.push(`<div><small>${esc(label)}</small><b>${delta>0?'+':''}${money?wanTxt(delta):delta}</b><small>${money?exactMoney(a):a} → ${money?exactMoney(b):b}</small></div>`);};
  for(const [key,label,money] of [['cash','公司现金',true],['aum','客户资产',true],['propCash','自营账户',true],['fundHold','基金保有',true],['profitCum','累计损益',true],['energy','本月精力'],['trust','口碑'],['morale','士气'],['risk','风险'],['dirt','案底'],['baodai','保荐代表人']])add(label,before[key]||0,S[key]||0,money);
  for(const n of S.npcs||[]){const old=(before.npcs||[]).find(x=>x.id===n.id);if(old)add(n.name+'好感',old.fav,n.fav);}
- for(const e of S.emps||[]){const old=(before.emps||[]).find(x=>x.id===e.id);if(old)add(e.name+'倦怠',old.fatigue||0,e.fatigue||0);}
+ for(const e of S.emps||[]){const old=(before.emps||[]).find(x=>x.id===e.id);if(old){add(e.name+'倦怠',old.fatigue||0,e.fatigue||0);for(const c of TRAINING_COURSES){add(e.name+c.name+'星级',old[c.id],e[c.id]);add(e.name+c.name+'进度',(old.training||{})[c.id]||0,(e.training||{})[c.id]||0);}add(e.name+'月薪',old.salary,e.salary,true);}}
  const debt=a=>(a||[]).reduce((v,b)=>v+b.amt,0);add('借款本金',debt(before.bonds),debt(S.bonds),true);
  const text=(label,a,b)=>{if(a!==b)rows.push(`<div><small>${esc(label)}</small><b>${esc(String(a))} → ${esc(String(b))}</b></div>`);};
  text('佣金',BALANCE.fee.names[before.fee],BALANCE.fee.names[S.fee]);
@@ -1750,7 +1825,7 @@ function initialState(){
       {id:0, name:"冉建国", mk:5, mg:4, rk:2, flavor:"解放碑的定海神针，客户比公司还认他", salary:3.3, trait:"laoguming", fatigue:12, npcBound:"ran"},
       {id:1, name:"陈斌",   mk:3, mg:2, rk:2, flavor:"观音桥的主任，去年刚提的，还在证明自己", salary:2.1, trait:"wanghong", fatigue:5},
       {id:2, name:"唐蕾",   mk:2, mg:3, rk:4, flavor:"从风控部调过来的，说话慢，很少说错", salary:2.7, trait:"shudaizi", fatigue:0},
-    ],
+    ].map(e=>{employeeTraining(e);return e;}),
     empSeq:3, candidates:null,
     npcs: NPCS.map(n=>({...n, used80:false, tried:{}, arc:0})),
     rivals: RIVALS.map(r=>({...r, heat:0})),
@@ -1872,6 +1947,7 @@ function migrate(s){
     if(s.baodai===undefined) s.baodai = 3;
     if(!Array.isArray(s.bonds)) s.bonds = [];
   }
+  (s.emps||[]).forEach(employeeTraining);
   s.ver = 2;
   return s;
 }
@@ -2008,17 +2084,15 @@ function checkUnlock(n){
 function actInternal(){
   if(needEnergy()) return;
   showModal("抓内部", "公司里的事，不抓就自己烂。", [
-    {t:"团建", s:"士气+7，现金-60万", fn:()=>{ spend(); gain("morale",7); gain("cash",-60);
+    {t:"员工培训", s:"1精力 · 定向培养营销、管理、风控能力", fn:()=>actTraining()},
+    {t:"团建", s:"士气+7，全员倦怠-4，现金-60万", fn:()=>{ spend(); gain("morale",7); gain("cash",-60);
       S.emps.forEach(e=>e.fatigue=clamp((e.fatigue||0)-4,0,100));
       log("good","全公司去南山吃了顿饭，KTV 包到十二点。士气+7，现金-60万。"); afterAct(); }},
     {t:"合规排查", s:"风险-6；有案底时可以处理一条", fn:()=>{ spend(); gain("risk",-6);
       if(S.dirt>0 && RNG()<0.55){ gain("dirt",-1); log("good","沈清禾带人翻了两周台账，补了一批留痕材料。风险-6，有一桩旧事算是圆过去了。"); }
       else log("good","合规排查做了一轮，流程理顺了些。风险-6。");
       addFav("shen",3); afterAct(); }},
-    {t:"轮休一个月", s:"全员倦怠-14，本月产出×0.75", fn:()=>{ spend(); S.restMonth = true; S.track.rest++;
-      S.emps.forEach(e=>e.fatigue=clamp((e.fatigue||0)-14,0,100));
-      gain("morale",4);
-      log("","排了一个月轮休。营业部照开，人少一半。全员倦怠-14，本月产出打七五折。"); afterAct(); }},
+    {t:"轮休一个月", s:"全员倦怠-24、士气+6；月末减负，本月营业部产出×0.75", disabled:()=>S.restMonth, fn:()=>arrangeTeamRest()},
     {t:"招聘", s:"人事处约了三个人", fn:()=>{ spend(); S.track.hire++; showHire(); }},
     {t:"从同行挖人", s:"花钱，带客户来，也带风险", fn:()=>actPoach()},
     {t:"← 返回"},
@@ -2037,7 +2111,7 @@ function showHire(){
     s:`${c.flavor}${c.trait?" · "+TRAITS[c.trait].nm:""}<br>月薪 ${c.salary}万 + 带队人力 ${team}万 = 每月 ${(c.salary+team).toFixed(1)}万`,
     fn:()=>{
       const e = {...c, id:S.empSeq++};
-      S.emps.push(e);
+      employeeTraining(e); S.emps.push(e);
       S.candidates = null;
       log("good", `${e.name}入职，下周一报到。${e.flavor}。<b>月薪 ${e.salary}万，加上他底下那一队人，公司每月多出 ${(e.salary+BALANCE.cost.perEmpTeam).toFixed(1)}万。</b>`);
       afterAct();
@@ -3035,13 +3109,7 @@ function settleCore(){
 
   /* 6. 员工倦怠 */
   for(const e of S.emps){
-    let f = S.outlets.some(o=>o.mgr===e.id) ? BALANCE.emp.fatigueMgr : BALANCE.emp.fatiguePerMonth;
-    if(e.trait==="wanghong") f += 4;
-    if(e.trait==="laoguming") f -= 2;
-    if(S.pushMonth) f += 3;
-    if(S.restMonth) f -= 6;
-    if(mb>=4) f += 4;
-    e.fatigue = clamp((e.fatigue||0)+f*fatigueMul(), 0, 100);
+    e.fatigue = clamp((e.fatigue||0)+monthlyFatigue(e,mb), 0, 100);
   }
   const burnt = S.emps.filter(e=>(e.fatigue||0)>=BALANCE.emp.quitAt && !e.npcBound);
   for(const e of burnt){
@@ -3065,9 +3133,9 @@ function settleCore(){
   /* 8. 士气基准 / 口碑 / 风险 */
   const avgFat = S.emps.length ? S.emps.reduce((a,e)=>a+(e.fatigue||0),0)/S.emps.length : 0;
   const roamRk = S.emps.reduce((a,e)=>a+rkPower(e),0);
-  const mBase = clamp(30 + S.trust*0.20 - avgFat*0.30 + (S.prop===2&&ret<0 ? -6:0), 0, 95);
+  const mBase = clamp(45 + S.trust*0.22 + teamManagement()*2 - avgFat*0.15 + (S.prop===2&&ret<0 ? -6:0), 0, 95);
   S.moraleBase = Math.round(mBase);
-  gain("morale", +((mBase-S.morale)*0.22).toFixed(2));
+  gain("morale", +clamp((mBase-S.morale)*0.12,-2.5,3).toFixed(2));
   // 口碑向一个基准回归：不管它就掉到三十出头，要维持高口碑得一直花力气
   // 什么都不做，口碑停在 45 上下；做了错事才往下掉。当月跑过业务就不扣那 0.6
   const bizDone = S.pushMonth || S.marketingFlag || S.flags.bizThisMonth;
@@ -7146,7 +7214,7 @@ function renderStats(){
      tip:`公司自有资金。客户的钱不在这里，也永远不会进这里。\n\n六个月固定开支 ${wanTxt(sixMonthCost())}，这条线以下就别再往自营和两融里投了。\n自营账户另有 ${wanTxt(S.propCash||0)}，那笔钱已经划出去了。${bondDebt()?`\n负债 ${wanTxt(bondDebt())}，最近一笔第 ${nextBondDue()} 月到期。`:""}\n净资产 ${wanTxt(BALANCE.start.netAsset)}（楼、系统、子公司、风险准备金，动不了）。`},
     {lb:"客户资产", v:wanTxt(S.aum), d:deltaTxt("aum"), tip:`托管在渝江的客户资产。累计净流入 ${(S.netInflow>=0?"+":"")}${wanTxt(S.netInflow)}（只有这个算你的本事，浮盈不算）。`},
     {lb:"口碑", v:Math.round(S.trust), d:deltaTxt("trust"), tip:"客户和股吧怎么看你。影响净流入和事件走向。"},
-    {lb:"士气", v:Math.round(S.morale), d:deltaTxt("morale"), tip:`员工状态。基准 ${S.moraleBase||"—"}，团队会逐渐回到这个水平，想长久提振士气，还得照顾口碑、工作负担和自营亏损带来的压力。`},
+    {lb:"士气", v:Math.round(S.morale), d:deltaTxt("morale"), tip:`员工状态。基准 ${S.moraleBase||"—"}，团队会缓慢回到这个水平（每月自然回落最多2.5）。管理星、口碑和倦怠共同决定基准；培训和轮休能提振状态。`},
     {lb:"风险", v:Math.round(S.risk)+(S.dirt>=3?" ":""), d:deltaTxt("risk",false), tip:"风险到 90，约谈离任。"+(S.dirt>=3?"\n 有些事，最好别让人翻出来。":"")},
     {lb:"行业排名", v:"第"+S.rank, d:"", tip:`全国 140 家，每季度更新。分类评级 ${S.grade}。`},
   ];
@@ -7240,7 +7308,8 @@ function panelTeam(){
     <div class="row"><div><h3>人手</h3> <span class="num">在册 <b>${S.emps.length}</b> 人 · 空闲 <b>${free}</b> 人 · 主任空缺 <b class="${vac?"neg":""}">${vac}</b> 家</span></div>
       <span class="num">骨干月薪合计 <b>${totalSalary()}万</b></span></div>
     ${vac?`<div class="sub" style="color:var(--bad)">有 ${vac} 家营业部没有主任，产出减半。</div>`:""}
-    <div class="cardbtns"><button class="main" onclick="actHire()">招聘（1 精力）</button></div></div>`;
+    <div class="cardbtns"><button class="main" onclick="actHire()">招聘（1 精力）</button><button onclick="actTraining()">员工培训</button><button onclick="arrangeTeamRest()" ${S.restMonth||S.energy<1?'disabled':''}>${S.restMonth?'本月已轮休':'轮休（1 精力）'}</button></div>
+    <div class="sub">培训两次升一星，每人每月一次；轮休倦怠-24、士气+6。倦怠越低越好，达到92可能离职。</div></div>`;
   const used = S.outlets.filter(o=>o.mgr!=null).map(o=>o.mgr);
   for(const e of S.emps){
     const post = S.outlets.find(o=>o.mgr===e.id);
@@ -7252,7 +7321,9 @@ function panelTeam(){
       <div class="sub">${esc(e.flavor)}${post?`　·　现任 ${esc(post.name)} 主任`:""}</div>
       </div></div>
       ${e.trait?`<div class="sub" style="color:var(--dim2)">${TRAITS[e.trait].desc}</div>`:""}
-      <div class="cardbtns">${e.npcBound?"":`<button onclick="fireEmp(${e.id})">辞退</button>`}</div>
+      <div class="sub num">倦怠 <b>${Math.round(e.fatigue||0)}/100</b> · 本月预计${monthlyFatigue(e)>=0?'+':''}${monthlyFatigue(e)}（含当前行情与工作安排）</div>
+      <div class="sub">培训：${TRAINING_COURSES.map(c=>`${c.name} ${e[c.id]>=5?'满星':employeeTraining(e)[c.id]+'/100'}`).join(' · ')}${employeeTraining(e).lastMonth===S.month?' · 本月已培训':''}</div>
+      <div class="cardbtns"><button onclick="showTraining(${e.id})" ${trainingBlock(e)?'disabled':''}>${trainingBlock(e)||'安排培训'}</button>${e.npcBound?"":`<button onclick="fireEmp(${e.id})">辞退</button>`}</div>
     </div>`;
   }
   return h;
@@ -7568,7 +7639,7 @@ EVENTS.push(
      inflow(Math.round(S.aum*0.03),"挖回来的团队");
      const e = {id:S.empSeq++, name:pick(EMP_NAMES.filter(n=>!S.emps.some(x=>x.name===n))) || "新人",
                 mk:4, mg:3, rk:2, flavor:"从长江联合回来的，客户名单还在手机里", salary:salaryOf({mk:4,mg:3,rk:2}), trait:"laoguming", fatigue:0};
-     S.emps.push(e);
+     employeeTraining(e); S.emps.push(e);
      log("good", `两个人都收了，职级按走之前算，绩效从零起步。一次性安置成本三百二十万。<b>${e.name}回来的第一个月就把老客户联系了一遍，客户资产回流了一大块。</b><span style='color:var(--dim)'>入职那天他在电梯里碰到冉建国，站着没说话。冉建国拍了拍他，说了句「回来就好好做」。</span>`, true); }},
    {t:"只要客户不要人", s:"客户资产+", fn:()=>{ inflow(Math.round(S.aum*0.015),"回流客户");
      log("","你让经纪条线直接去联系那批客户做承接，人不要。<b>回来了一部分。</b><span style='color:var(--dim)'>冉建国说：「走了的人，回来也是身在曹营。客户能回来就行了。」这句话他说得很平，听不出是不是真这么想。</span>"); }},
@@ -7780,7 +7851,7 @@ function actPoach(){
           const e = {id:S.empSeq++, name:nm, mk:Math.min(5,lv+1), mg:clamp(lv,1,5), rk:clamp(lv-1,1,5),
                      flavor:`从${r.name}挖过来的，客户名单还热着`, trait:pick(TRAIT_IDS), fatigue:0};
           e.salary = +(salaryOf(e)*1.25).toFixed(1);
-          S.emps.push(e);
+          employeeTraining(e); S.emps.push(e);
           const book = Math.round(BALANCE.poach.book[lv]*rnd(0.8,1.2));
           inflow(book, "挖来的客户");
           gain("risk", BALANCE.poach.riskHit);
@@ -8676,6 +8747,7 @@ function propBeta(){
   return B.crashBeta + (nthOf("crash")===1 ? extra : 0);
 }
 const API = {
+  TRAINING_COURSES, trainEmployee, employeeTraining, trainingQuote, monthlyFatigue, teamManagement, arrangeTeamRest,
   LONG_PROJECTS, OPERATING_MODES, projectQuote, buildBusiness, setOperatingMode, businessState, settleBusiness, selectYearPlan, settleYearPlan, extendCareer,
   initialState, settleCore, endMonth, nextMonth, finalEnding, scoreParts, routeOf,
   makeCycle, phaseOf, curPhase, moodBand, turnover, feeRate, outletInflow, propAlpha,
